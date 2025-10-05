@@ -104,12 +104,6 @@ def run():
     net.get('fw1').setIP("10.0.3.254/24", intf='fw1-eth1')  # Frontend FW to DMZ
     net.get('fw2').setIP("10.0.4.254/24", intf='fw2-eth1')  # Backend FW to MZ Core
 
-    # # IPv4 packet forwarding at your routers/firewalls
-    # for node in ['r1', 'fw1', 'fw2', 'ips']:   
-    #     net.get(node).cmd("sysctl -w net.ipv4.ip_forward=1")
-    #     net.get(node).cmd(f"zebra -d -f /home/mayank/Desktop/IRCTC/IRCTC-Simulator/Mininet/zebra/{node}_zebra.conf")
-    #     net.get(node).cmd(f"rpid -d -f /home/mayank/Desktop/IRCTC/IRCTC-Simulator/Mininet/rpid/{node}_rpid.conf")
-
     for host in net.hosts:
         # Pick the first interface's subnet as reference
         intf = host.intfNames()[0]          # e.g., user1-eth0
