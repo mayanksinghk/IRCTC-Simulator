@@ -4,7 +4,9 @@ from mininet.net import Mininet
 from mininet.cli import CLI
 from mininet.node import Node
 from mininet.node import OVSSwitch
+from mininet.term import makeTerm
 import logging
+import time
 
 
 class LinuxRouter(Node):
@@ -151,6 +153,17 @@ def run():
     fw2.cmd("ip route add 10.0.2.0/24 via 10.0.3.254 dev fw2-eth0")  # FW1 via DMZ
     fw2.cmd("ip route add 10.0.3.0/24 dev fw2-eth0")                # DMZ subnet
     fw2.cmd("ip route add 10.0.4.0/24 via 10.0.4.1 dev fw2-eth1")  # MZ Core
+
+    # ==========================
+    # Starting servers in correct order
+    # ==========================
+    makeTerm(net.get('web'), title="Web Server", cmd="python3 Servers/web.py")
+    time.sleep(1)
+    makeTerm(net.get('waf1'), title="WAF", cmd="python3 Servers/waf.py")
+    time.sleep(1)
+    makeTerm(net.get('adc1'), title="ADC", cmd="python3 Servers/adc.py")
+    time.sleep(3)  # wait for servers to start
+    makeTerm(net.get('user1'), title="User", cmd="python3 Servers/user.py")
 
     print("\nNetwork ready. Use CLI to test.\n")
     CLI(net)
