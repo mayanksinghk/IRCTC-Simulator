@@ -74,29 +74,29 @@ This setup is ideal for testing secure proxying, backend communication, and TLS 
 
 1. **Server** (`server.py`):
 
-- Listens on port 9000 by default.
-- For each client connection, starts a new thread to handle communication.
-- Echoes back any received message with an "Echo: " prefix.
+    - Listens on port 9000 by default.
+    - For each client connection, starts a new thread to handle communication.
+    - Echoes back any received message with an "Echo: " prefix.
 
 2. **Proxy** (`proxy.py`):
 
-- Listens on port 8000 by default.
-- Forwards all data between the client and the server (on port 9000).
-- Runs two threads per connection to handle bidirectional data transfer.
+    - Listens on port 8000 by default.
+    - Forwards all data between the client and the server (on port 9000).
+    - Runs two threads per connection to handle bidirectional data transfer.
 
 3. **Client** (`client.py`):
 
-- Connects to the proxy (port 8000).
-- Reads user input, sends it to the server via the proxy, and prints the server's response.
+    - Connects to the proxy (port 8000).
+    - Reads user input, sends it to the server via the proxy, and prints the server's response.
 
 4. **start_proxy.sh**:
 
-- Launches the server, proxy, and client in separate GNOME terminal windows for convenience.
+    - Launches the server, proxy, and client in separate GNOME terminal windows for convenience.
 
 5. **Capture_payload_tls.py**:
 
-- Analyzes a TLS-encrypted pcap file to estimate the size of the original application payloads.
-- Outputs a CSV file with per-stream statistics, including estimated plaintext bytes and cipher suite information.
+    - Analyzes a TLS-encrypted pcap file to estimate the size of the original application payloads.
+    - Outputs a CSV file with per-stream statistics, including estimated plaintext bytes and cipher suite information.
 
 ## Usage
 
