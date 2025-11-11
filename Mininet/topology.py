@@ -157,13 +157,13 @@ def run():
     # ==========================
     # Starting servers in correct order
     # ==========================
-    makeTerm(net.get('web'), title="Web Server", cmd="python3 Servers/web.py")
-    time.sleep(1)
-    makeTerm(net.get('waf1'), title="WAF", cmd="python3 Servers/waf.py")
-    time.sleep(1)
-    makeTerm(net.get('adc1'), title="ADC", cmd="python3 Servers/adc.py")
-    time.sleep(3)  # wait for servers to start
-    makeTerm(net.get('user1'), title="User", cmd="python3 Servers/user.py")
+    # makeTerm(net.get('web'), title="Web Server", cmd="python3 Servers/web.py")
+    # time.sleep(1)
+    # makeTerm(net.get('waf1'), title="WAF", cmd="python3 Servers/waf.py")
+    # time.sleep(5)
+    # makeTerm(net.get('adc1'), title="ADC", cmd="python3 Servers/adc.py")
+    # time.sleep(1)  # wait for servers to start
+    # makeTerm(net.get('user1'), title="User", cmd="python3 Servers/user.py")
 
     print("\nNetwork ready. Use CLI to test.\n")
     CLI(net)

@@ -1,57 +1,47 @@
 #!/usr/bin/env python3
 import socket
 import ssl
-from scapy.all import *
-import random
+import argparse
 
-# ADC address and port
-ADC_IP = "10.0.3.1"   # change to adc1 IP from user1's perspective
-ADC_PORT = 443
+SERVER_IP = "10.0.3.1"
+SERVER_PORT = 443
 
-
-def random_http_payload():   
-    # Simple random HTTP GET request
-    http_methods = ["GET", "POST", "HEAD"]
-    paths = ["/", "/index.html", "/login", "/api/data"]
-    method = random.choice(http_methods)
-    path = random.choice(paths)
-    host = ADC_IP
-    http_payload = f"{method} {path} HTTP/1.1\r\nHost: {host}\r\n\r\n"
-    
-    return http_payload
+TLS_VERSIONS = {
+    "TLSv1": ssl.PROTOCOL_TLSv1,
+    "TLSv1.1": ssl.PROTOCOL_TLSv1_1,
+    "TLSv1.2": ssl.PROTOCOL_TLSv1_2,
+    "TLSv1.3": ssl.PROTOCOL_TLS_CLIENT,  # we restrict below
+}
 
 
-def main():
-    context = ssl.create_default_context()
+def main(tls_version):
+    if tls_version not in TLS_VERSIONS:
+        raise ValueError(f"Unsupported TLS version: {tls_version}")
+
+    if tls_version == "TLSv1.3":
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.maximum_version = ssl.TLSVersion.TLSv1_3
+    else:
+        context = ssl.SSLContext(TLS_VERSIONS[tls_version])
+
     context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE  # skip cert verification for testing
+    context.verify_mode = ssl.CERT_NONE  # skip verification for self-signed cert
 
-    # Connect TCP
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((ADC_IP, ADC_PORT))
+    with socket.create_connection((SERVER_IP, SERVER_PORT)) as sock:
+        with context.wrap_socket(sock, server_hostname=SERVER_IP) as tls_conn:
+            print(f"[+] Connected with TLS version: {tls_conn.version()}")
+            while True:
+                msg = input("Enter message (or 'quit'): ")
+                if msg.lower() == "quit":
+                    break
+                tls_conn.sendall(msg.encode())
+                data = tls_conn.recv(1024)
+                print(f"[<] ACK from server: {data.decode(errors='ignore')}")
 
-    # Wrap with TLS
-    conn = context.wrap_socket(sock, server_hostname="adc1")
-
-    for i in range(10):
-        payload = random_http_payload()
-        print(f"=== Sending HTTP Request {i+1} ===")
-        print(payload)
-        conn.sendall(payload.encode())
-        
-        # Receive response
-        response = b""
-        while True:
-            data = conn.recv(4096)
-            if not data:
-                break
-            response += data
-
-        print("=== HTTP Response ===")
-        print(response.decode(errors="ignore"))
-        time.sleep(1)  # wait before sending next request
-
-    conn.close()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tls", choices=["TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"], default="TLSv1.3")
+    args = parser.parse_args()
+    main(args.tls)
