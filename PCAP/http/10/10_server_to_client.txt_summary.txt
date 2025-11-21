@@ -1,0 +1,19 @@
+=== HTTP REQUEST SUMMARY ===
+POST: 15433
+GET: 87596
+CONNECT: 2127
+OPTIONS: 55
+HEAD: 7
+
+=== HTTP RESPONSE SUMMARY ===
+OK: 27631
+Connection established: 2127
+No Content: 370
+Not Found: 738
+Not found: 23
+Moved Permanently: 130
+Moved Temporarily: 158
+Not Modified: 418
+Found: 5
+Internal Server Error: 2
+Forbidden: 7

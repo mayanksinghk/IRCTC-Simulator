@@ -1,0 +1,23 @@
+=== HTTP REQUEST SUMMARY ===
+GET: 266275
+POST: 392046
+CONNECT: 21060
+OPTIONS: 1934
+
+=== HTTP RESPONSE SUMMARY ===
+OK: 385699
+Connection established: 21046
+Gone: 153
+Unauthorized: 1993
+No Content: 175
+Forbidden: 1273
+Moved Temporarily: 987
+Not Acceptable: 808
+Not Found: 165
+Service Unavailable: 58
+Found: 13
+Conflict: 57
+Not Modified: 660
+Connection Established: 11
+Bad Request: 4
+Internal Server Error: 4

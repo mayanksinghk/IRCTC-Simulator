@@ -1,0 +1,17 @@
+=== HTTP REQUEST SUMMARY ===
+GET: 136703
+POST: 2658
+OPTIONS: 1831
+HEAD: 4
+
+=== HTTP RESPONSE SUMMARY ===
+OK: 125927
+No Content: 738
+Not Found: 1175
+Moved Temporarily: 690
+Moved Permanently: 101
+Not Modified: 981
+Not Acceptable: 13
+Internal Server Error: 5
+Continue: 16
+Bad Request: 1
