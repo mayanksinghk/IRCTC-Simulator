@@ -1,0 +1,75 @@
+14:A9:D0:10:44:06,F5 Inc.
+F4:B5:2F:F1:3B:F0,Juniper Networks
+00:00:5E:00:01:01,ICANN, IANA Department
+00:1C:7F:81:09:0B,Check Point Software Technologies
+28:8A:1C:EA:F3:F0,Juniper Networks
+54:E0:32:9D:9A:C1,Juniper Networks
+20:ED:47:FC:0C:AE,Juniper Networks
+54:E0:32:9D:9D:41,Juniper Networks
+28:A2:4B:10:68:00,Juniper Networks
+20:ED:47:F6:19:0E,Juniper Networks
+00:00:5E:00:01:65,ICANN, IANA Department
+9C:CC:83:0D:90:40,Juniper Networks
+00:1C:7F:81:05:0B,Check Point Software Technologies
+14:A9:D0:10:44:05,F5 Inc.
+14:A9:D0:10:50:05,F5 Inc.
+00:94:A1:6C:3A:04,F5 Inc.
+14:A9:D0:15:4A:04,F5 Inc.
+40:F2:E9:C2:20:6C,IBM
+14:A9:D0:15:4A:06,F5 Inc.
+6C:AE:8B:33:30:BC,IBM Corporation
+6C:AE:8B:33:0B:FC,IBM Corporation
+6C:AE:8B:33:1C:B4,IBM Corporation
+6C:AE:8B:33:0D:24,IBM Corporation
+A8:97:DC:8B:60:00,IBM
+6C:AE:8B:33:18:24,IBM Corporation
+14:A9:D0:15:6C:06,F5 Inc.
+A8:97:DC:8B:4C:00,IBM
+00:00:5E:00:01:02,ICANN, IANA Department
+6C:AE:8B:33:33:64,IBM Corporation
+6C:AE:8B:33:2B:9C,IBM Corporation
+00:94:A1:6C:3A:06,F5 Inc.
+0C:C4:7A:BD:1B:24,Super Micro Computer, Inc.
+14:A9:D0:10:50:06,F5 Inc.
+00:1C:7F:A1:09:0B,Check Point Software Technologies
+00:1C:7F:47:54:7A,Check Point Software Technologies
+6C:AE:8B:33:0A:30,IBM Corporation
+6C:AE:8B:34:FC:78,IBM Corporation
+6C:AE:8B:33:2C:50,IBM Corporation
+6C:AE:8B:33:0D:20,IBM Corporation
+14:A9:D0:10:44:02,F5 Inc.
+6C:AE:8B:33:26:40,IBM Corporation
+00:1C:7F:47:09:2E,Check Point Software Technologies
+90:E2:BA:49:4A:D0,Intel Corporate
+00:1C:7F:47:11:F0,Check Point Software Technologies
+6C:AE:8B:33:2B:98,IBM Corporation
+00:1C:7F:47:12:8C,Check Point Software Technologies
+6C:AE:8B:33:30:B8,IBM Corporation
+2C:5A:0F:16:37:0B,Cisco Systems, Inc
+00:1C:7F:47:12:74,Check Point Software Technologies
+00:1C:7F:47:12:BC,Check Point Software Technologies
+90:E2:BA:4C:15:68,Intel Corporate
+6C:AE:8B:33:33:40,IBM Corporation
+00:1C:7F:47:12:C0,Check Point Software Technologies
+6C:AE:8B:33:1C:B0,IBM Corporation
+00:1C:7F:47:08:DA,Check Point Software Technologies
+00:00:5E:00:01:03,ICANN, IANA Department
+6C:AE:8B:33:33:60,IBM Corporation
+2C:5A:0F:16:36:6F,Cisco Systems, Inc
+00:1C:7F:47:11:A0,Check Point Software Technologies
+00:1C:7F:47:50:AC,Check Point Software Technologies
+00:1C:7F:47:09:3A,Check Point Software Technologies
+00:94:A1:6C:3A:02,F5 Inc.
+6C:AE:8B:33:80:40,IBM Corporation
+00:1C:7F:47:09:3E,Check Point Software Technologies
+40:F2:E9:C2:20:68,IBM
+14:A9:D0:10:50:02,F5 Inc.
+14:A9:D0:15:6C:02,F5 Inc.
+14:A9:D0:15:4A:02,F5 Inc.
+6C:AE:8B:33:32:08,IBM Corporation
+6C:AE:8B:33:2E:18,IBM Corporation
+00:1C:7F:A1:11:0B,Check Point Software Technologies
+14:A9:D0:10:7E:85,F5 Inc.
+F4:B5:2F:F2:CF:F0,Juniper Networks
+F4:B5:2F:71:A7:F0,Juniper Networks
+14:A9:D0:10:1A:05,F5 Inc.

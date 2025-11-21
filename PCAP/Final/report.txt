@@ -1,0 +1,341 @@
+ADC
+----------------------------------------------------------------------------------------------------------------------
+Virtual IP: IP that are public facing. ADC have virtual IP so that it can accept connection from the internet.
+103.252.142.19
+103.252.142.21
+103.252.142.22
+103.252.142.24
+103.252.142.27
+103.252.142.28
+103.252.142.35
+103.252.142.41
+103.252.142.46
+103.252.142.49
+103.252.142.53
+103.252.142.55
+103.252.142.9
+These IP accepts tls connection also some IPs also have http but after analyzing the content of the http packet it was concluded it is not useful.
+Due to the presence of a syn packet from an private IP(10.79.2.103(This is a Mail Server present inside the MZ zone)) address to virtual IP of ADC at port 25 we can conclude tha the ADC is probably acting as an Mail server proxy. Any communication from Private Ip is most likely passing through ADC. 
+As you can see 103.252.142.0/24 all virtual IP at this ADC is in this subnet probably we can say that this subnet is fixed for delhi location. As we know cris have data center across multiple location this means each subnet is fixed for each geo location.
+ASN assigned to CRIS are 203.176.112.0/24, 203.176.113.0/24, 103.252.143.0/24, 103.252.142.0/24,  103.110.246.0/24.
+
+
+WAF
+----------------------------------------------------------------------------------------------------------------------
+From the Capture of 8-9.pcap I can see these are the IPs belonging to the WAF. WAF acts as a Firewall at layer7 and also as a load balancer.
+10.79.3.31
+10.79.3.32
+10.79.3.33
+
+
+
+
+Web Server
+----------------------------------------------------------------------------------------------------------------------
+From the capture at WAF interface we can say that these are the private IP of the Web servers.
+10.79.3.21
+10.79.3.22
+10.79.3.23
+10.79.3.24
+10.79.3.29
+10.79.3.37
+10.79.3.46
+10.79.3.53
+
+
+
+
+Application Server
+----------------------------------------------------------------------------------------------------------------------
+From the capture at Web server we can say belo listed IP which are using http are probably the backup servers or the appliation server.
+10.79.1.52
+10.79.1.56 - NTP Server
+These are public IP assigned to CRIS. 
+203.176.112.88
+203.176.113.117
+       +----------------+                      +----------------+
+       |      DC1       |                      |      DC2       |
+       |  Private IPs   |                      |  Internal svc |
+       +--------+-------+                      +--------+-------+
+                |                                       ^
+                |                                       |
+                v                                       |
+       +--------+-------+                      +--------+-------+
+       |      ADC        | NAT: Private → Public|      ADC       |
+       | (DC1 side NAT)  +--------------------->| (DC2 side NAT)|
+       +--------+-------+                      +--------+-------+
+                |                                       ^
+                | Public IP / Gateway                   |
+                v                                       |
+       +----------------------+                         |
+       |  WAN / Internet GW   |-------------------------+
+       +----------------------+
+This is the most probable conclusion I can get.
+
+From the capture at 11.pcap(Just before Backend Firewall) we can tell these are probably the ip address of application server or any services using http and https. Some of them will be web server because lot of other protocol like to use http as a base to implement themselves.
+10.77.48.28
+10.78.1.215
+10.78.10.44
+10.78.10.45
+10.78.10.48
+10.78.10.49
+10.78.10.50
+10.78.3.20
+10.78.3.23
+10.78.3.24
+10.78.3.27
+10.78.3.30
+10.78.3.36
+10.78.3.41
+10.78.3.42
+10.78.3.46
+10.78.3.51
+10.78.3.52
+10.78.3.53
+10.78.3.55
+10.78.3.56
+10.78.3.57
+10.79.1.15
+10.79.1.16
+10.79.1.30 - snmp port open NTP Server
+10.79.1.31 - snmp port open NTP Server
+10.79.1.33
+10.79.1.34
+10.79.1.35
+10.79.2.33 - snmp port open
+10.79.2.34 - snmp port open
+10.79.2.41
+10.79.2.42
+10.79.2.43 - Probably belongs to database/cache
+10.79.2.44
+10.79.2.52
+10.79.2.53
+10.79.2.54
+10.79.2.55
+10.79.2.56
+103.252.142.134 - snmp port open also NTP server
+103.252.142.135 - snmp port open also NTP server
+103.252.142.170
+172.16.1.61
+
+From the capture at 12.pcap(After Backend Firewall) we can tell these are probably the ip address of application server or any services using http and https. Some of them will be web server because lot of other protocol like to use http as a base to implement themselves.
+10.74.5.63
+10.74.8.51
+10.77.49.19
+10.77.9.250
+10.77.9.251
+10.78.1.174
+10.78.1.214
+10.78.1.215 - Can see at 11.pcap
+10.78.1.30
+10.78.1.31
+10.78.1.98
+10.78.10.155
+10.78.3.20 - Can see at 11.pcap
+10.78.3.21
+10.78.3.23 - Can see at 11.pcap
+10.78.3.24 - Can see at 11.pcap
+10.78.3.27 - Can see at 11.pcap
+10.78.3.30 - Can see at 11.pcap
+10.78.3.32
+10.78.3.36 - Can see at 11.pcap
+10.78.3.41 - Can see at 11.pcap
+10.78.3.42 - Can see at 11.pcap
+10.78.3.46 - Can see at 11.pcap
+10.78.3.51 - Can see at 11.pcap
+10.78.3.52 - Can see at 11.pcap
+10.78.3.53 - Can see at 11.pcap
+10.78.3.55 - Can see at 11.pcap
+10.78.3.56 - Can see at 11.pcap
+10.78.3.57 - Can see at 11.pcap
+10.78.9.122
+10.79.1.15 - Can see at 11.pcap
+10.79.1.16 - Can see at 11.pcap
+10.79.1.33 - Can see at 11.pcap
+10.79.1.34 - Can see at 11.pcap
+10.79.1.35 - Can see at 11.pcap probably belongs to cache server
+10.79.2.33 - Can see at 11.pcap also snmp port open
+10.79.2.34 - Can see at 11.pcap also snmp port open
+10.79.2.42 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.43 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.43 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.44 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.45 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.45 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.52 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.53 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.54 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.54 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.55 - Can see at 11.pcap probably belongs to database/cache server
+10.79.2.56 - Can see at 11.pcap probably belongs to database/cache server
+103.252.142.170 - Can see at 11.pcap ssh Accessible
+
+DNS Server
+----------------------------------------------------------------------------------------------------------------------
+Got these IP from 10.pcap(Web Server)
+10.78.1.192
+203.153.41.28
+All the request to 203.153.41.28 is from single private IP: 10.79.1.72. (why?)
+All the request to 10.78.1.192 is from single private IP: 10.78.1.52. (why?)
+(which network component does 10.79.1.72 and 10.78.1.52 belong to?)
+
+Cache Server
+----------------------------------------------------------------------------------------------------------------------
+The 10.79.1.39 is a Web server as the port 11211 is used by webserver to talk to the cache server. This means the IP of cache server is probably 10.79.1.72. All communication between them are encrypted using tls. (This can be a probable bottleneck in case there are multiple cache misses.)
+From the 11.pcap we get these ip list probably with same logic as above these are also web server.
+10.79.1.35
+10.79.2.41
+10.79.2.43
+10.79.2.44
+10.79.2.45
+10.79.2.52
+10.79.2.53
+10.79.2.55
+10.79.2.56
+
+
+
+Database Server
+----------------------------------------------------------------------------------------------------------------------
+10.79.1.39:27108
+10.79.1.54:27109
+These IP were caught at 10.pcap using port 27018 and 27019 belonging to mongodb database. Possible these IP belongs to Database.
+By digging on internet we can see that the port 27018 belongs to a Config server and 27019 belongs to a sharded server. But as seen from the Cache server 10.79.1.39 is a Web server.(What does this mean)
+
+    Config Server
+    -------------
+    A config server (configuration server) is a specialized MongoDB instance that stores the metadata for the entire sharded cluster. first request comes here then this tells which server to go to get the required data.
+
+    Shard Server
+    ------------
+    A shard server (or simply a "shard") is a standard MongoDB instance (mongod) that holds a subset of the total data within the sharded cluster.
+
+10.78.1.60
+10.78.1.70
+10.79.2.42
+10.79.2.44
+10.79.2.48
+10.79.2.52
+10.79.2.53
+These are the IP that is recieving at port 9200. This mean these belong to database cluster. All the update to database happens through these nodes.
+
+10.78.1.89
+10.78.1.96
+10.79.2.42
+10.79.2.43
+10.79.2.44
+10.79.2.45
+10.79.2.48
+10.79.2.51
+10.79.2.52
+10.79.2.53
+10.79.2.54
+10.79.2.55
+10.79.2.56
+
+
+NTP servers
+----------------------------------------------------------------------------------------------------------------------
+10.78.1.221
+10.79.1.55
+10.79.1.57
+10.79.1.58
+
+10.78.1.193
+10.78.16.6
+10.79.1.30
+10.79.1.31
+10.79.1.48 - SSH Accessible
+10.79.1.56
+10.79.2.101 - CLASHING WITH MAIL SERVER
+103.252.142.134
+103.252.142.135
+These are the NTP servers used by the data centers to make sure that all the machines in the server are synchronised. The internal dedicated NTP server often has specialized hardware attached to it to ensure maximum accuracy like GPS reciever, Atomic clocks etc.
+
+SysLog servers
+----------------------------------------------------------------------------------------------------------------------
+These are most probably the Log Server as the port 514 is opened which uses syslog protocol. All these Server have snmp port opened.
+10.79.2.6
+10.78.1.168
+10.78.10.57
+103.252.142.193
+103.252.142.194
+103.252.142.196
+103.252.142.197
+103.252.142.203
+103.252.142.204
+
+Mail Server
+----------------------------------------------------------------------------------------------------------------------
+10.79.2.101
+10.79.2.102
+10.79.2.103
+This IP are probably the Mail Server as the port 25 is opened here.
+
+SNMP Server
+----------------------------------------------------------------------------------------------------------------------
+There are some common ip between snmp and application server. Possible explanation for these are they are probably some servers which are managed by both humans and machines. The presence of both ports strongly suggests a device that is a foundational piece of IT infrastructure. The most probable candidates are Routers, Layer 3 Switches, WAFs, or ADCs, as these are typically managed as integrated appliances with both monitoring protocols built in by default.
+
+10.79.1.30
+10.79.1.31
+10.79.1.6
+10.79.2.11
+10.79.2.33
+10.79.2.34
+10.79.2.35
+10.79.2.36
+10.79.2.37
+10.79.2.8
+10.79.2.9
+103.252.142.134
+103.252.142.135
+103.252.142.253
+103.252.142.254
+
+SSH Accessible
+----------------------------------------------------------------------------------------------------------------------
+In short amount of 5 min for pcap capture there are multiple ssh(why)
+10.78.1.221 - NTP server
+10.79.1.41
+10.79.1.42
+10.79.1.43
+10.79.1.44
+10.79.1.45
+10.79.1.46
+10.79.1.47
+10.79.1.48
+10.79.1.49
+10.79.1.50
+10.79.1.51
+10.79.1.52 - May be application server
+10.79.1.53
+10.79.1.54 - May be an Database Server
+10.79.1.55 - NTP Server
+10.79.1.56 - (May be an appliction server) NTP Server
+10.79.1.57 - NTP Server
+10.79.1.58 - NTP Server
+10.79.1.59
+10.79.1.61
+10.79.1.71
+10.79.1.72 - Most probably Cache Server
+10.79.1.81
+10.79.1.82
+10.79.2.101 - Mail Server
+10.79.2.102 - Mal Server
+10.79.2.6 - Log Server
+103.252.142.166
+103.252.142.167
+103.252.142.170
+
+
+
+
+
+
+
+
+Time between TCP and its ack
+Same rack	1–5 µs
+Different rack, same DC	5–50 µs
+Across DC campus (km scale)	50–100 µs
+Across metro link (>10 km)	100–200 µs

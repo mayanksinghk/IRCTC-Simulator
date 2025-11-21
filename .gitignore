@@ -1,1 +1,9 @@
-/Containers
+Containers/
+Data/
+PCAP/Unique_IP_all
+
+# Ignore all CSV files in all subdirectories
+**/*.csv
+
+# Ignore all PCAP files in all subdirectories
+**/*.pcap
