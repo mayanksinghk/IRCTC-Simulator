@@ -1,0 +1,45 @@
+[+] Loading IPv4s...
+    → 23 public IPs
+[+] Building ASN DB...
+[+] Saving master Excel...
+[✓] Saved HackerTarget-style Excel: Output/asn_lookup.xlsx
+[+] Summary:
+
+========== SUMMARY ==========
+Total ASNs: 5
+Total Prefixes: 5
+
+Top 10 AS by Prefix Count:
+    AS #                                 AS Name  Prefix Count
+0   9498                      BHARTI Airtel Ltd.             1
+1   9583                            Sify Limited             1
+2  24186        RailTel Corporation of India Ltd             1
+3  45596  Centre For Railway Information Systems             1
+4  55410                       Vodafone Idea Ltd             1
+
+[+] Building PyTricia prefix tree from asn lookup table...
+[+] Loading: asn_lookup.xlsx
+[✓] PyTricia tree built.
+[+] Matching IPs to ASN...
+[✓] Saved IP → ASN mapping CSV: Output/11_unique_ips_matched_ips.csv
+
+[✓] Pipeline complete.
+   → matched_ips.csv
+   → unmatched_ips.txt
+   → asn_master.xlsx
+
+========== SUMMARY ==========
+Total IPs processed  : 23
+Matched IPs          : 22 (95.65%)
+Unmatched IPs        : 1 (4.35%)
+================================
+
+
+========== ASN DISTRIBUTION ==========
+Centre For Railway Information Systems   :    17  (73.91%)
+RailTel Corporation of India Ltd         :     2  (8.70%)
+Sify Limited                             :     1  (4.35%)
+Vodafone Idea Ltd                        :     1  (4.35%)
+BHARTI Airtel Ltd.                       :     1  (4.35%)
+======================================
+

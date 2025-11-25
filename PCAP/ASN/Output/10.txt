@@ -1,0 +1,69 @@
+[+] Loading IPv4s...
+    → 46 public IPs
+[+] Building ASN DB...
+[+] Saving master Excel...
+[✓] Saved HackerTarget-style Excel: Output/asn_lookup.xlsx
+[+] Summary:
+
+========== SUMMARY ==========
+Total ASNs: 24
+Total Prefixes: 34
+
+Top 10 AS by Prefix Count:
+      AS #                                            AS Name  Prefix Count
+2    16509                                          AMAZON-02             7
+7    18229                                              CtrlS             2
+6    17439  NTT COMMUNICATIONS INDIA NETWORK SERVICES PRIV...             2
+13   45644                           IT-Networking Department             2
+23  396982                              GOOGLE-CLOUD-PLATFORM             2
+1    14061                                   DIGITALOCEAN-ASN             1
+3    16625                                          AKAMAI-AS             1
+0    13335                                      CLOUDFLARENET             1
+4    17426                                    Primesoftex Ltd             1
+5    17436                     ICICIBANK Ltd, Banking, Mumbai             1
+
+[+] Building PyTricia prefix tree from asn lookup table...
+[+] Loading: asn_lookup.xlsx
+[✓] PyTricia tree built.
+[+] Matching IPs to ASN...
+[✓] Saved IP → ASN mapping CSV: Output/10_unique_ips_matched_ips.csv
+
+[✓] Pipeline complete.
+   → matched_ips.csv
+   → unmatched_ips.txt
+   → asn_master.xlsx
+
+========== SUMMARY ==========
+Total IPs processed  : 46
+Matched IPs          : 45 (97.83%)
+Unmatched IPs        : 1 (2.17%)
+================================
+
+
+========== ASN DISTRIBUTION ==========
+AMAZON-02                                :     9  (19.57%)
+NTT COMMUNICATIONS INDIA NETWORK SERVICES PRIVATE LIMITED :     4  (8.70%)
+CLOUDFLARENET                            :     3  (6.52%)
+Centre For Railway Information Systems   :     3  (6.52%)
+Web Werks India Pvt. Ltd.                :     2  (4.35%)
+GOOGLE-CLOUD-PLATFORM                    :     2  (4.35%)
+IT-Networking Department                 :     2  (4.35%)
+First Data Resources Australia Limited   :     2  (4.35%)
+Reliance Jio Infocomm Limited            :     2  (4.35%)
+CtrlS                                    :     2  (4.35%)
+YOTTA NETWORK SERVICES PRIVATE LIMITED   :     1  (2.17%)
+AKAMAI-AS                                :     1  (2.17%)
+V-Connect Systems And Services Pvt. Ltd. :     1  (2.17%)
+ICICIBANK Ltd, Banking, Mumbai           :     1  (2.17%)
+Punjab National Bank                     :     1  (2.17%)
+RailTel Corporation is an Internet Service Provider. :     1  (2.17%)
+Vodafone Idea Ltd                        :     1  (2.17%)
+282, Sector 19                           :     1  (2.17%)
+DIGITALOCEAN-ASN                         :     1  (2.17%)
+Primesoftex Ltd                          :     1  (2.17%)
+Akamai International B.V.                :     1  (2.17%)
+RailTel Corporation of India Ltd         :     1  (2.17%)
+GOOGLE-2                                 :     1  (2.17%)
+AS-26496-GO-DADDY-COM-LLC                :     1  (2.17%)
+======================================
+

@@ -1,0 +1,198 @@
+[+] Loading IPv4s...
+    → 2751 public IPs
+[+] Building ASN DB...
+[+] Saving master Excel...
+[✓] Saved HackerTarget-style Excel: Output/asn_lookup.xlsx
+[+] Summary:
+
+========== SUMMARY ==========
+Total ASNs: 157
+Total Prefixes: 520
+
+Top 10 AS by Prefix Count:
+      AS #                                 AS Name  Prefix Count
+35   45609  Bharti Airtel Ltd. AS for GPRS Service           112
+25   24560  Bharti Airtel Ltd., Telemedia Services            42
+3     9829              National Internet Backbone            25
+31   45271                       Vodafone Idea Ltd            20
+28   38266                       Vodafone Idea Ltd            17
+48   55836           Reliance Jio Infocomm Limited            15
+19   20940               Akamai International B.V.            13
+78  133982       Excitel Broadband Private Limited            11
+10   17488          Hathway IP Over Cable Internet            11
+20   23860   Alliance Broadband Services Pvt. Ltd.            10
+
+[+] Building PyTricia prefix tree from asn lookup table...
+[+] Loading: asn_lookup.xlsx
+[✓] PyTricia tree built.
+[+] Matching IPs to ASN...
+[✓] Saved IP → ASN mapping CSV: Output/6-7_unique_ips_matched_ips.csv
+
+[✓] Pipeline complete.
+   → matched_ips.csv
+   → unmatched_ips.txt
+   → asn_master.xlsx
+
+========== SUMMARY ==========
+Total IPs processed  : 2751
+Matched IPs          : 2749 (99.93%)
+Unmatched IPs        : 2 (0.07%)
+================================
+
+
+========== ASN DISTRIBUTION ==========
+Reliance Jio Infocomm Limited            :  1181  (42.93%)
+Bharti Airtel Ltd. AS for GPRS Service   :   600  (21.81%)
+Vodafone Idea Ltd                        :   252  (9.16%)
+Akamai International B.V.                :   169  (6.14%)
+Bharti Airtel Ltd., Telemedia Services   :    75  (2.73%)
+National Internet Backbone               :    68  (2.47%)
+BHARTI Airtel Ltd.                       :    56  (2.04%)
+Atria Convergence Technologies Ltd.      :    21  (0.76%)
+ZSCALER-INC                              :    19  (0.69%)
+Centre For Railway Information Systems   :    17  (0.62%)
+Excitel Broadband Private Limited        :    15  (0.55%)
+Hathway IP Over Cable Internet           :    15  (0.55%)
+GOOGLE-CLOUD-PLATFORM                    :    10  (0.36%)
+Alliance Broadband Services Pvt. Ltd.    :    10  (0.36%)
+RailTel Corporation of India Ltd         :     9  (0.33%)
+D-Vois Broadband Pvt Ltd                 :     9  (0.33%)
+TATA Communications formerly VSNL is Leading ISP :     9  (0.33%)
+NKN Core Network                         :     7  (0.25%)
+Atria Convergence Technologies Pvt. Ltd. Broadband Internet Service Provider INDIA :     6  (0.22%)
+CLOUDFLARENET                            :     6  (0.22%)
+Tata Teleservices ISP AS                 :     5  (0.18%)
+Juweriyah Networks Private Limited       :     5  (0.18%)
+ONEOTT INTERTAINMENT LIMITED             :     5  (0.18%)
+Microscan Internet Limited               :     4  (0.15%)
+Gujarat Telelink Pvt Ltd                 :     4  (0.15%)
+NETSKOPE                                 :     4  (0.15%)
+WISH NET PRIVATE LIMITED                 :     4  (0.15%)
+Intech Online Private Limited            :     3  (0.11%)
+Syscon Infoway Pvt. Ltd.                 :     3  (0.11%)
+Navkar Supertech Pvt Ltd                 :     3  (0.11%)
+Satellite Netcom Private Limited         :     3  (0.11%)
+Sify Limited                             :     3  (0.11%)
+Weblink Systems Private Limited          :     3  (0.11%)
+Zess Networks Private Limited            :     3  (0.11%)
+FASTLY                                   :     3  (0.11%)
+NTT COMMUNICATIONS INDIA NETWORK SERVICES PRIVATE LIMITED :     2  (0.07%)
+DIGITAL NETWORK ASSOCIATES PRIVATE LIMITED :     2  (0.07%)
+TATA PLAY BROADBAND PRIVATE LIMITED      :     2  (0.07%)
+Vasai Cable Pvt. Ltd.                    :     2  (0.07%)
+Ani Network Pvt Ltd                      :     2  (0.07%)
+Willaegis Online Private Limited         :     2  (0.07%)
+Airnet Cable And Datacom Pvt Ltd         :     2  (0.07%)
+Skylink Fibernet Private Limited         :     2  (0.07%)
+Wsns Pvt. Ltd.                           :     2  (0.07%)
+Five network Broadband Solution Pvt Ltd  :     2  (0.07%)
+INDINET SERVICE PRIVATE LIMITED          :     2  (0.07%)
+AMAZON-02                                :     2  (0.07%)
+Vortex Netsol Private Limited            :     2  (0.07%)
+Fast 4 Technologies                      :     2  (0.07%)
+Quadrant Televentures Limited            :     2  (0.07%)
+Digital Network Associates Pvt Ltd       :     2  (0.07%)
+Tata Teleservices Maharashtra Ltd        :     2  (0.07%)
+Cable ISP in India                       :     2  (0.07%)
+OVH SAS                                  :     2  (0.07%)
+CtrlS                                    :     2  (0.07%)
+Kerala Vision Broad Band Private Limited :     2  (0.07%)
+MEGHBELA BROADBAND                       :     2  (0.07%)
+Karunay Internet Pvt Ltd                 :     1  (0.04%)
+Vibhuti Networks Private Limited         :     1  (0.04%)
+UCN CABLE NETWORK PVT. LTD               :     1  (0.04%)
+Speed Communication                      :     1  (0.04%)
+Sri Lakshmi Networks Private Limited     :     1  (0.04%)
+Cloudnet Communications Pvt Ltd          :     1  (0.04%)
+Ebenezar Communications Private Limited  :     1  (0.04%)
+Department of Governance Reforms         :     1  (0.04%)
+Unq Communication Private Limited        :     1  (0.04%)
+Speedking Infotech Pvt. Ltd.             :     1  (0.04%)
+Fibre Air Services Private Limited       :     1  (0.04%)
+SEVENNET BROADBAND SERVICES PRIVATE LIMITED :     1  (0.04%)
+Swamivatvruksha Net opc Private Limited  :     1  (0.04%)
+D D Telecom Pvt. Ltd                     :     1  (0.04%)
+BlazeNets Network                        :     1  (0.04%)
+Skynet Datacom Pvt Ltd                   :     1  (0.04%)
+Super Sonic Broadband Pvt Ltd            :     1  (0.04%)
+Megatel Networks Private Limited         :     1  (0.04%)
+BIGVENTURES MEDIA PVT LTD                :     1  (0.04%)
+INDTEL INFRA PRIVATE LIMITED             :     1  (0.04%)
+GULBARGA NET INTERNET CABLE SERVICE      :     1  (0.04%)
+INTERCITY FIBER NETWORKS PRIVATE LIMITED :     1  (0.04%)
+SHREE BALAJI WIFI PVT LTD                :     1  (0.04%)
+Auriganet Digital Technologies Private Limited :     1  (0.04%)
+Siddhant Broadband Private Limited       :     1  (0.04%)
+Limerick Technologies Pvt Ltd            :     1  (0.04%)
+St Broadband Cable Service               :     1  (0.04%)
+Infolink System                          :     1  (0.04%)
+Softnet Digital Cable Private Limited    :     1  (0.04%)
+Deshkal Network Pvt Ltd                  :     1  (0.04%)
+Vno Networks Pvt Ltd                     :     1  (0.04%)
+Speedostar Telco Private Limited         :     1  (0.04%)
+Lucky Airnet Pvt Ltd.                    :     1  (0.04%)
+Elyzium Technologies Pvt. Ltd.           :     1  (0.04%)
+WINET COMMUNIATIONS                      :     1  (0.04%)
+tornado net private limited              :     1  (0.04%)
+Quest Consultancy Pvt Ltd                :     1  (0.04%)
+Genstar Network Solutions Pvt Ltd.       :     1  (0.04%)
+NET 4 U SERVICES PVT LTD                 :     1  (0.04%)
+INFONET COMM ENTERPRISES                 :     1  (0.04%)
+Threesa Infoway Pvt.Ltd.                 :     1  (0.04%)
+Weebo networks Pvt Ltd                   :     1  (0.04%)
+Live Line Network Technology Pvt Ltd     :     1  (0.04%)
+Seven Star Digital Network Private Limited :     1  (0.04%)
+Pioneer Elabs Ltd.                       :     1  (0.04%)
+Digiway Net Pvt Ltd                      :     1  (0.04%)
+ANO Broadband Service Pvt Ltd            :     1  (0.04%)
+Omkar Infotech                           :     1  (0.04%)
+Precious netcom pvt ltd                  :     1  (0.04%)
+Adri Infocom Pvt Ltd                     :     1  (0.04%)
+IAXN Telecom Pvt. Ltd.                   :     1  (0.04%)
+JETWAY BROADBAND INDIA PVT LTD           :     1  (0.04%)
+Shivansh Infotech pvt Ltd                :     1  (0.04%)
+Dell SonicWALL                           :     1  (0.04%)
+KKD BROADBAND PRIVATE LIMITED            :     1  (0.04%)
+INCUBIX UNIFIED SOLUTIONS PVT LTD        :     1  (0.04%)
+Bilal Internet Services Private Limited  :     1  (0.04%)
+Ski Network Services Private Limited     :     1  (0.04%)
+Sancfil Technologies Internet Services Pvt.Ltd :     1  (0.04%)
+Snet Networks Private Limited            :     1  (0.04%)
+OM SHIV SAI INTERNET SERVICE OPC PVT LTD :     1  (0.04%)
+AIRSPACE BROADBAND PVT LTD               :     1  (0.04%)
+Telemantrra Sales Corporation Private Limited :     1  (0.04%)
+Shikhar Broadband Enterprises Pvt Ltd    :     1  (0.04%)
+GCP-ENTERPRISE-USER-TRAFFIC              :     1  (0.04%)
+Allnet Broadband Network Pvt Ltd         :     1  (0.04%)
+VAINAVI INDUSTIES LTD, INTERNET SERVICE PROVIDER, INDIA :     1  (0.04%)
+Fusionnet Web Services Private Limited   :     1  (0.04%)
+MNR Broadband Services Pvt. Ltd.         :     1  (0.04%)
+Rapidnet Private Limited                 :     1  (0.04%)
+Paradise Telecom Pvt Ltd                 :     1  (0.04%)
+Cityline Networks Pvt Ltd                :     1  (0.04%)
+Musarubra Germany GmbH                   :     1  (0.04%)
+Deenet Services Pvt Ltd                  :     1  (0.04%)
+Deutsche Bank AG-India Internet AS       :     1  (0.04%)
+282, Sector 19                           :     1  (0.04%)
+Netplus Broadband Services Private Limited :     1  (0.04%)
+SSV BROADBAND INTERNET                   :     1  (0.04%)
+WEBYNE DATA CENTRE PRIVATE LIMITED       :     1  (0.04%)
+Flex Ltd. STT Tata Colo, 226, Ambattur Red Hills Rd, Kallikuppam, Ambattur, Chennai, Tamil :     1  (0.04%)
+Ishans Network                           :     1  (0.04%)
+CENTRE FOR DEVELOPMENT OF TELEMATICS     :     1  (0.04%)
+Mahanagar Telephone Nigam Limited        :     1  (0.04%)
+AMDOCS DEVELOPMENT CENTRE INDIA LLP      :     1  (0.04%)
+ORACLE-BMC-31898                         :     1  (0.04%)
+Primesoftex Ltd                          :     1  (0.04%)
+YOU Broadband & Cable India Ltd.         :     1  (0.04%)
+Gatik Business Solutions                 :     1  (0.04%)
+CHANNEL III INTERNET PRIVATE LIMITED     :     1  (0.04%)
+SDN TELECOM PVT LTD                      :     1  (0.04%)
+FAB FIVE NETWORK PRIVATE LIMITED         :     1  (0.04%)
+K-anandraj Inet Solutions Private Limited :     1  (0.04%)
+Nirija Solutions Private Limited         :     1  (0.04%)
+Charotar Telelink Pvt Ltd                :     1  (0.04%)
+Datacamp Limited                         :     1  (0.04%)
+Cyberzone S.A.                           :     1  (0.04%)
+======================================
+
