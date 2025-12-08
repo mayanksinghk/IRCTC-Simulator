@@ -1,0 +1,9 @@
+contents.irctc.co.in
+irctc.co.in
+payment.irctc.co.in
+qr.indianrail.gov.in
+www.contents.irctc.co.in
+www.irctc.co.in
+www.operations.irctc.co.in
+www.payment.irctc.co.in
+www.wps.irctc.co.in
