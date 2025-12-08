@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-
+'''
+This script processes HTTP GET request URIs from a text file containing capture at 8-9, groups them in a logical grouping and cout their number. The results are saved to a txt file. It also generates a filter that can be used in tshark or wireshark to filter out packets related to these URIs which can be used for calculating round trip time and other analysis.
+'''
 import argparse
 from urllib.parse import urlparse
 
@@ -10,21 +12,25 @@ from urllib.parse import urlparse
 # ============================================================
 # LOAD HOSTS FROM FILE
 # ============================================================
-def load_hosts(hosts_file: str) -> set:
+def load_file(hosts_file: str) -> set:
     """Load hosts from a file into a set."""
     with open(hosts_file, 'r') as f:
         return set(line.strip() for line in f if line.strip())
-    
+
+def group_uri(uri: str) -> str:
+    """Group URI into a logical grouping."""
+    parsed_uri = urlparse(uri)
+    list_uri_group = {
+        
+    }
+
 # ============================================================
 # PROCESS HTTP INPUT TXT FILES
 # ============================================================
-def process_http_file(input_file: str, hosts: set, verbose: bool) -> dict:
+def process_http_file(input_file: str, verbose: bool) -> dict:
     """Process the HTTP input file and count URIs."""
     uri_counts = {}
-    table = str.maketrans({
-    # ',': ' ',
-    ' ': ' '
-    })
+    table = str.maketrans({' ': ' '})
     count = 0
 
     with open(input_file, 'r') as f:
@@ -33,23 +39,12 @@ def process_http_file(input_file: str, hosts: set, verbose: bool) -> dict:
             if len(parts) != 1:
                 print(f"[!] Malformed line skipped: {line.strip()}")
                 continue  # Skip malformed lines
+
             
             uri = parts[0]
-            host = urlparse(uri).hostname or ""
-
-            # Count http packets per host
-            if host in hosts:
-                if host not in uri_counts:
-                    uri_counts[host] = 0
-                uri_counts[host] += 1
-            count += 1
 
     if verbose:
         print(f"[+] Processed {count} lines from {input_file}")
-        u_counts = 0
-        for uri, cnt in uri_counts.items():
-            u_counts += cnt
-        print(f"[+] Total unique URIs counted: {len(uri_counts)} with total count: {u_counts}")
     return uri_counts
 
 # ============================================================
@@ -58,19 +53,18 @@ def process_http_file(input_file: str, hosts: set, verbose: bool) -> dict:
 def main():
     argparser = argparse.ArgumentParser(description="Count unique HTTP GET request URIs in a PCAP file.")
     argparser.add_argument("-i", "--input", required=True, help="Input PCAP file")
-    argparser.add_argument("-o", "--output", default="get_uri_counts.csv", help="Output CSV file")
-    argparser.add_argument("-f", "--hosts", required=True, help="File containing list of hosts to filter")
+    argparser.add_argument("-o", "--output", default="output.csv", help="Output CSV file")
     argparser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
 
     args = argparser.parse_args()
 
 
-    # Load hosts 
-    hosts = load_hosts(args.hosts)
-    uri_counts = process_http_file(args.input, hosts, args.verbose)
+    # Load input file 
+    input = load_file(args.input)
+    uri_counts = process_http_file(args.input, args.verbose)
     if args.verbose:
-        print(f"[+] Loaded {len(hosts)} hosts from {args.hosts}")
-        print(f"[+] Processed {len(uri_counts)} unique URIs.")
+        print(f"[+] Loaded {len(input)} GET request from {args.input}")
+        print(f"[+] Processed {len(uri_counts)} unique grouping of URIs.")
         for host, count in uri_counts.items():
             print(f"    Host: {host}, Count: {count}")
     
@@ -90,7 +84,4 @@ if __name__ == "__main__":
 
 
 # Run the script with appropriate arguments to process HTTP URIs from a PCAP file.
-# ./http_summary.py -i ./Get/8-9_get_http.txt -f ./Hosts/8-9_unique_hosts.txt -o ./Output/8-9_get_summary.csv -v
-# ./http_summary.py -i ./Get/10_get_http.txt -f ./Hosts/10_unique_hosts.txt -o ./Output/10_get_summary.csv -v
-# ./http_summary.py -i ./Get/11_get_http.txt -f ./Hosts/11_unique_hosts.txt -o ./Output/11_get_summary.csv -v
-# ./http_summary.py -i ./Get/12_get_http.txt -f ./Hosts/12_unique_hosts.txt -o ./Output/12_get_summary.csv -v
+# ./http_detail.py -i input.txt -o output.csv -f hosts.txt -v
