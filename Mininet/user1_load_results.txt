@@ -1,0 +1,10 @@
+[*] Starting Load Test: 100000 packets at 50 concurrency...
+[*] Target: https://10.0.3.1/
+
+========================================
+[*] Test Finished in 261.92 seconds
+[*] Throughput: 381.79 requests/sec
+[*] Successful (200 OK): 100000
+[*] Failed/Dropped: 0
+========================================
+
