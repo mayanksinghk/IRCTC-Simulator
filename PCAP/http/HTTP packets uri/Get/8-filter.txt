@@ -1,0 +1,67 @@
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/boardingstationenquiry/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/cancelChargeEnq
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/bookedHistorySearch?
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/cancellationAndTdrDetailByCanId/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/cancelTkt/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/captchaganetate/BOOKINGWS
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/captchaganetate/FORGOT_PASSWORD
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/captchaverify/ BOOKINGWS
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/changeBDPoint
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/checkUserAvail?email
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/checkUserAvail?mobile
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/deleteJourneyDetails
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/downloadErs
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/forgotPasswordInit
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/generateOTP/BOOKING
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/historySearchByTxnId/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/loginCaptcha
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/masterpsgnlistdelete/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/masterpsgnlistenquiry
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/occupation
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/optVikalp/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/pin/110020
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/pnrenq/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/recentTxnsDetails
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/refundDetailsSearch/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/refundTktHistorySearch
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/resendOTP/BOOKING
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/resendOTP/LOGIN
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/saveJourneyDetails/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/sendBookedEmailPdf/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/tktEligibleForCancellation
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/tktEligibleForTDR
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/trnscheduleenquiry/
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/validateUser
+http://www.contents.irctc.co.in/eticketing/protected/mapps1/vikalpTrainList/
+http://www.irctc.co.in/eticketing/protected/ewallet/printTaxInvoice/100005813636834%5E1
+http://www.irctc.co.in/eticketing/protected/mapps1/boardingstationenquiry/
+http://www.irctc.co.in/eticketing/protected/mapps1/cancellationAndTdrDetailByCanId/
+http://www.irctc.co.in/eticketing/protected/mapps1/cancelTkt
+http://www.irctc.co.in/eticketing/protected/mapps1/captchaganetate FORGOT_PASSWORD
+http://www.irctc.co.in/eticketing/protected/mapps1/captchaganetate BOOKINGWS
+http://www.irctc.co.in/eticketing/protected/mapps1/changeBDPoint/
+http://www.irctc.co.in/eticketing/protected/mapps1/checkUserAvail email
+http://www.irctc.co.in/eticketing/protected/mapps1/checkUserAvail userid
+http://www.irctc.co.in/eticketing/protected/mapps1/checkUserAvail mobile
+http://www.irctc.co.in/eticketing/protected/mapps1/forgotPasswordInit/
+http://www.irctc.co.in/eticketing/protected/mapps1/getSMSeMailOTP/
+http://www.irctc.co.in/eticketing/protected/mapps1/historySearchByTxnId/
+http://www.irctc.co.in/eticketing/protected/mapps1/masterpsgnlistdelete/
+http://www.irctc.co.in/eticketing/protected/mapps1/pin/
+http://www.irctc.co.in/eticketing/protected/mapps1/pnrenq/
+http://www.irctc.co.in/eticketing/protected/mapps1/printTicket/
+http://www.irctc.co.in/eticketing/protected/mapps1/refundDetailsSearch/
+http://www.irctc.co.in/eticketing/protected/mapps1/resendOTP/BOOKING
+http://www.irctc.co.in/eticketing/protected/mapps1/reSendSMS/
+http://www.irctc.co.in/eticketing/protected/mapps1/sendBookedEmailPdf/
+http://www.irctc.co.in/eticketing/protected/mapps1/trnscheduleenquiry/
+http://www.irctc.co.in/eticketing/protected/mapps1/validateUser
+http://www.irctc.co.in/eticketing/protected/mapps1/verifySMSeMailOTP
+http://www.irctc.co.in/eticketing/protected/mapps1/vikalpTrainList/
+http://www.irctc.co.in/eticketing/protected/profile/textToNumber/
+http://www.irctc.co.in/nget/ngsw.json?ngsw-cache-bust=
+http://www.irctc.co.in/online-charts/?trainNumber=
+http://www.irctc.co.in/nget/ngsw.json?ngsw-cache-bust=
+http://www.wps.irctc.co.in/eticketing/protected/mapps1/bookingData/
+http://www.wps.irctc.co.in/eticketing/protected/profile/numberToText/
+http://www.irctc.co.in/eticketing/protected/profile/textToNumber/
