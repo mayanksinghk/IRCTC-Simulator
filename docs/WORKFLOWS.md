@@ -53,7 +53,7 @@ flowchart LR
   A1 --> O2[ASN excel/csv mappings]
 ```
 
-## 5) File/Folder Intent at a glance
+## 5) File/Folder Intent at a Glance
 
 - **Runtime code**: `Mininet/`
 - **Runtime services**: `Mininet/Servers/`
