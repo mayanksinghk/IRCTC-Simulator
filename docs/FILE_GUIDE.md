@@ -22,7 +22,7 @@ This guide focuses on the files that drive behavior. Generated result artifacts 
 | `Mininet/Servers/app.py` | Minimal HTTP server returning success message on port 80. | Simple endpoint when validating proxy-chain traversal. |
 | `Mininet/Servers/user.py` | Interactive TLS client for manual handshake/message testing against ADC. | Manual protocol testing and quick smoke checks. |
 | `Mininet/Servers/delay_proxy.py` | Same delay-proxy concept mirrored under `Servers/`. | Co-located helper for service-side experiments. |
-| `Mininet/Servers/1temp.py` | Experimental/temporary variant of ADC-like server. | Scratch/test implementation retained for experimentation. |
+| `Mininet/Servers/1temp.py` | Experimental/temporary variant of ADC-like server (non-production naming kept as-is). | Scratch/test implementation retained for experimentation; safe to rename later if promoted to primary path. |
 
 ## C) HTTP Analysis (`PCAP/http/`)
 
