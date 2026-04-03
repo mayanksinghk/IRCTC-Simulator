@@ -19,9 +19,19 @@ DATA_DIR="$SCRIPT_DIR/../PCAP"
 
 echo "============================================================"
 echo " Starting IRCTC PCAP GMM Analysis Batch Job"
+echo " Deleting old results "
+echo "============================================================"
+rm -rf adc1
+rm -rf ips
+rm -rf user1
+rm -rf waf1
+rm -rf web
+rm -rf fw2
+rm -rf app
+
+echo "============================================================"
 echo " Working Directory: $SCRIPT_DIR"
 echo "============================================================"
-
 # Function to run the python script and print verbose progress
 run_analysis() {
     local pcap_file=$1

@@ -57,7 +57,8 @@ class CRISDCNetwork(Topo):
         self.addLink(slb, s3)
         self.addLink(app, s3)
 
-def run():
+# Use standard False defaults here
+def run(disable_delays=False, disable_logging=False):
     logger.info("Preparing environment...")
     
     # Ensure directories exist on the host machine
@@ -123,48 +124,58 @@ def run():
             host.cmd(f"ip route add default via {gw}")
     
     # --- PCAP CAPTURE START ---
-    # We capture at IPS and ADC1 to verify the GMM delay injection
     logger.info("Starting background packet captures...")
     nodes_to_capture = ['user1', 'ips', 'adc1', 'app', 'waf1', 'web', 'fw2']
     
     for name in nodes_to_capture:
         node = net.get(name)
-        # Disable hardware offloading to ensure pcap captures actual packet sizes
         for intf in node.intfList():
             node.cmd(f'ethtool -K {intf.name} tx off rx off')
         
-        # Capture TCP traffic on ports 80 and 443
-        # -U ensures the buffer is flushed immediately so you don't lose data on crash
         pcap_file = f"{os.getcwd()}/PCAP/{name}.pcap"
         log_file = f"{os.getcwd()}/Logs/{name}_tcpdump.log"
         node.cmd(f'tcpdump -i any "tcp port 80 or tcp port 443" -n -U -w {pcap_file} > {log_file} 2>&1 &')
     # --- PCAP CAPTURE END ---
-
 
     # ==========================
     # 3. Startup Specialized Scripts
     # ==========================
     logger.info("Starting specialized node proxies...")
     venv_python = "/home/mayank/Desktop/IRCTC/venv/bin/python3"
-    script_dir = "/home/mayank/Desktop/IRCTC/IRCTC-Simulator/docs/Mininet/Servers"
+    script_dir = "/home/mayank/Desktop/IRCTC/IRCTC-Simulator/Mininet/Servers"
+
+    # --- ENVIRONMENT INJECTION ---
+    # 1. Determine log level
+    if disable_logging:
+        log_level = "CRITICAL"  # Ignores INFO/DEBUG
+    else:
+        log_level = "DEBUG" if disable_delays else "INFO"
+
+    # 2. Build environment string
+    env_vars = f"NO_DELAY_MODE={'1' if disable_delays else '0'} LOG_LEVEL={log_level} "
+    logger.info(f"Node execution environment context: {env_vars.strip()}")
+
+    # 3. Determine log destination (Disk I/O bypass)
+    def get_log(filename):
+        return "/dev/null" if disable_logging else f"Logs/{filename}"
 
     # Terminal Logic
-    net.get('app').cmd(f'{venv_python} {script_dir}/fast_app.py > Logs/app_backend.log 2>&1 &')
-    net.get('app').cmd(f'{venv_python} {script_dir}/app_server_node.py > Logs/app_proxy.log 2>&1 &')
+    net.get('app').cmd(f'{venv_python} {script_dir}/fast_app.py > {get_log("app_backend.log")} 2>&1 &')
+    net.get('app').cmd(f'{env_vars}{venv_python} {script_dir}/app_server_node.py > {get_log("app_proxy.log")} 2>&1 &')
     
     # Management Zone
-    net.get('slb1').cmd(f'{venv_python} {script_dir}/slb_node.py > Logs/slb.log 2>&1 &')
-    net.get('fw2').cmd(f'{venv_python} {script_dir}/fw2_node.py > Logs/fw2.log 2>&1 &')
+    net.get('slb1').cmd(f'{env_vars}{venv_python} {script_dir}/slb_node.py > {get_log("slb.log")} 2>&1 &')
+    net.get('fw2').cmd(f'{env_vars}{venv_python} {script_dir}/fw2_node.py > {get_log("fw2.log")} 2>&1 &')
     
     # DMZ Zone
-    net.get('web').cmd(f'{venv_python} {script_dir}/web_node.py > Logs/web.log 2>&1 &')
-    net.get('waf1').cmd(f'{venv_python} {script_dir}/waf_node.py > Logs/waf.log 2>&1 &')
-    net.get('adc1').cmd(f'{venv_python} {script_dir}/adc_node.py > Logs/adc.log 2>&1 &')
+    net.get('web').cmd(f'{env_vars}{venv_python} {script_dir}/web_node.py > {get_log("web.log")} 2>&1 &')
+    net.get('waf1').cmd(f'{env_vars}{venv_python} {script_dir}/waf_node.py > {get_log("waf.log")} 2>&1 &')
+    net.get('adc1').cmd(f'{env_vars}{venv_python} {script_dir}/adc_node.py > {get_log("adc.log")} 2>&1 &')
 
     # IPS Transparent Interception
     ips_n = net.get('ips')
     ips_n.cmd('iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 443')
-    ips_n.cmd(f'{venv_python} {script_dir}/ips_node.py > Logs/ips.log 2>&1 &')
+    ips_n.cmd(f'{env_vars}{venv_python} {script_dir}/ips_node.py > {get_log("ips.log")} 2>&1 &')
 
     time.sleep(5) # Allow bindings
 
@@ -183,4 +194,14 @@ def run():
     net.stop()
 
 if __name__ == "__main__":
-    run()
+    # ==========================================
+    # MASTER TOGGLES
+    # ==========================================
+    # True = No Delay, False = Standard GMM Delays
+    DISABLE_DELAYS = False 
+    
+    # True = Max Performance (No disk I/O, no prints), False = Audit Mode
+    DISABLE_LOGGING = True 
+    
+    # Pass the toggles into the function
+    run(disable_delays=DISABLE_DELAYS, disable_logging=DISABLE_LOGGING)
