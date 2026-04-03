@@ -3,12 +3,23 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Define variables for cleaner code
-PYTHON_SCRIPT="/home/mayank/Desktop/IRCTC/IRCTC-Simulator/docs/Mininet/Post_Simulation/full_gmm.py"
-DATA_DIR="/home/mayank/Desktop/IRCTC/IRCTC-Simulator/docs/Mininet/PCAP"
+# ==============================================================================
+# PORTABLE CONFIGURATION
+# ==============================================================================
+# Dynamically determine the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Define paths relative to the script's location
+# full_gmm.py is in the same folder as this script
+# PYTHON_SCRIPT="$SCRIPT_DIR/full_gmm.py"
+PYTHON_SCRIPT="./../../PCAP/Code/full_gmm.py"
+
+# PCAP directory is a sibling to 'Post_Simulation' inside the 'Mininet' folder
+DATA_DIR="$SCRIPT_DIR/../PCAP"
 
 echo "============================================================"
 echo " Starting IRCTC PCAP GMM Analysis Batch Job"
+echo " Working Directory: $SCRIPT_DIR"
 echo "============================================================"
 
 # Function to run the python script and print verbose progress
@@ -24,6 +35,12 @@ run_analysis() {
     echo "[*] EXECUTING: python3 $PYTHON_SCRIPT $pcap_file $mode"
     echo "------------------------------------------------------------"
     
+    # Check if file exists before running
+    if [[ ! -f "$pcap_file" ]]; then
+        echo "[!] ERROR: PCAP file not found -> $pcap_file"
+        return 1
+    fi
+
     # Run the actual Python command
     python3 "$PYTHON_SCRIPT" "$pcap_file" "$mode"
     

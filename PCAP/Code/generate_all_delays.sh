@@ -3,16 +3,21 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# ================= CONFIGURATION =================
-# Path to your Python scripts
-PYTHON_SCRIPT="/home/mayank/Desktop/IRCTC/IRCTC-Simulator/PCAP/Code/generate_mininet_delays.py"
-ANALYZE_SCRIPT="/home/mayank/Desktop/IRCTC/IRCTC-Simulator/PCAP/Code/analyze_node_math.py"
+# ==============================================================================
+# GLOBAL CONFIGURATION & RELATIVE PATHS
+# ==============================================================================
+# Dynamically determine the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Python scripts are in the same folder as this bash script
+PYTHON_SCRIPT="$SCRIPT_DIR/generate_mininet_delays.py"
+ANALYZE_SCRIPT="$SCRIPT_DIR/analyze_node_math.py"
+
+# Input Directory where models are stored is also this same folder
+INPUT_DIR="$SCRIPT_DIR"
 
 # Number of samples to generate for Mininet (default 100k)
 SAMPLES=100000
-
-# Input Directory where models are stored
-INPUT_DIR="/home/mayank/Desktop/IRCTC/IRCTC-Simulator/PCAP/Code"
 
 # Output directory for the generated JSON files and Reports
 OUT_DIR="mininet_delays"
@@ -20,6 +25,7 @@ mkdir -p "$OUT_DIR"
 
 echo "============================================================"
 echo " STARTING ENTERPRISE DELAY GENERATION & ANALYSIS"
+echo " Working Directory: $SCRIPT_DIR"
 echo "============================================================"
 
 # Function for intermediate nodes (Calculates JSON and Math Report)
@@ -107,18 +113,20 @@ echo -e "\n[*] Do you want to copy the ${OUT_DIR} contents to the Mininet VM? (y
 read -r REPLY
 
 if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-    # Define the destination directory
-    DEST_DIR="./../../Mininet"
+    # Calculate the destination path relative to the script's directory
+    # Moves up from PCAP/Code to PCAP/ then up to Root/ then into Mininet/
+    DEST_DIR="$SCRIPT_DIR/../../Mininet"
     
-    # Perform the copy
-    cp -r "$OUT_DIR" "$DEST_DIR/"
-    
-    # Get the absolute path using the built-in 'pwd' method
-    # This temporarily steps into the destination, gets the true path, and steps out
-    ABS_DEST=$(cd "$DEST_DIR" 2>/dev/null && pwd)
-    FINAL_PATH="${ABS_DEST}/${OUT_DIR}"
-    
-    echo "[+] Files copied successfully to: $FINAL_PATH"
+    if [ -d "$DEST_DIR" ]; then
+        # Perform the copy
+        cp -r "$OUT_DIR" "$DEST_DIR/"
+        
+        # Resolve the absolute path for the final success message
+        ABS_DEST=$(cd "$DEST_DIR" 2>/dev/null && pwd)
+        echo "[+] Files copied successfully to: $ABS_DEST/$OUT_DIR"
+    else
+        echo "[!] Error: Destination directory not found at $DEST_DIR"
+    fi
 else
     echo "Skipping file transfer. You can manually copy the ${OUT_DIR} directory to your Mininet VM."
 fi

@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 from pathlib import Path
-import joblib  # Added for saving the GMM model
+import joblib 
 
 # ================= CONFIGURATION =================
 SAMPLE_SIZE = 1000000              
@@ -17,17 +17,29 @@ PLOT_CUTOFF_SECONDS = 2.0
 # =================================================
 
 def pre_process_pcap(infile, outfile, mode):
-    """Filters traffic based on mode (1=TLS, 2=HTTP)."""
+    """Filters traffic based on mode with robust decoding and desegmentation."""
     if os.path.exists(outfile):
         print(f"[*] {outfile} already exists. Skipping.")
         return
     
-    # Mode 1: TLS (Content type 23 is Application Data)
+    # Mode 1: TLS (Content type 23 or Port 443)
     # Mode 2: HTTP
-    display_filter = "tls.record.content_type == 23" if mode == 1 else "http"
+    if mode == 1:
+        display_filter = "tls.record.content_type == 23 || tcp.port == 443"
+        decode_param = ['-d', 'tcp.port==443,tls'] 
+    else:
+        display_filter = "http || tcp.port == 80"
+        decode_param = []
     
-    print(f"[*] Pre-processing ({'TLS' if mode==1 else 'HTTP'}): Filtering {infile}...")
-    cmd = ['tshark', '-r', infile, '-Y', display_filter, '-w', outfile, '-2']
+    print(f"[*] Pre-processing (Mode {mode}): Filtering {infile}...")
+    
+    # Forced desegmentation ensures we don't miss split application data records
+    cmd = ['tshark', '-r', infile] + decode_param + [
+        '-Y', display_filter,
+        '-o', 'tls.desegment_ssl_records:TRUE',
+        '-o', 'tcp.desegment_tcp_streams:TRUE',
+        '-w', outfile
+    ]
     subprocess.run(cmd, check=True)
 
 def extract_metadata(pcap_path, csv_out, mode):
@@ -47,74 +59,68 @@ def extract_metadata(pcap_path, csv_out, mode):
             subprocess.run(cmd, stdout=f, check=True)
     
     else:
-        # TLS Manual Calculation (No Decryption) - CORRECTED
-        SERVER_PORT = "443"  # Set to your target server port (e.g., 443, 8443)
-        
+        # TLS Manual Calculation (No Decryption)
+        SERVER_PORT = "443" 
         print(f"[*] Calculating TLS equivalent of http.time via stream analysis (Port {SERVER_PORT})...")
         
-        # ADDED: tcp.srcport and tcp.dstport to establish absolute direction
+        # Includes tcp.len to distinguish between ACKs and Application Data
         cmd = [
             'tshark', '-r', pcap_path, 
             '-T', 'fields', '-e', 'frame.number', '-e', 'frame.time_epoch', 
-            '-e', 'tcp.stream', '-e', 'tcp.srcport', '-e', 'tcp.dstport',
+            '-e', 'tcp.stream', '-e', 'tcp.srcport', '-e', 'tcp.dstport', '-e', 'tcp.len',
             '-E', 'separator=,'
         ]
-        raw_data = subprocess.check_output(cmd).decode('utf-8').splitlines()
         
+        try:
+            raw_data = subprocess.check_output(cmd).decode('utf-8').splitlines()
+        except subprocess.CalledProcessError as e:
+            print(f"[!] TShark Error: {e}")
+            return
+
         results = []
-        # Dictionary to hold the state machine for each individual TCP connection
-        # Format: stream_id -> {'last_dir': str, 'last_client_time': float, 'last_req_frame': str}
         streams = {} 
 
         for line in raw_data:
             if not line.strip(): continue
             parts = line.split(',')
             
-            # Skip malformed lines or packets missing port data
-            if len(parts) != 5 or not parts[3] or not parts[4]: 
+            if len(parts) < 6 or not parts[3] or not parts[4] or not parts[5]: 
                 continue 
                 
-            f_num, f_time, s_id, src_port, dst_port = parts
+            f_num, f_time, s_id, src_port, dst_port, tcp_len = parts
             f_time = float(f_time)
+            
+            try:
+                payload_size = int(tcp_len)
+            except ValueError:
+                continue
 
-            # If the TCP payload is 0 bytes, it is a pure ACK. Ignore it completely.
-            if int(tcp_len) == 0:
+            # Skip pure ACKs
+            if payload_size == 0:
                 continue
             
-            # 1. Establish Absolute Direction
             if dst_port == SERVER_PORT:
-                direction = 'C->S'  # Client is talking to Server
+                direction = 'C->S' 
             elif src_port == SERVER_PORT:
-                direction = 'S->C'  # Server is replying to Client
+                direction = 'S->C' 
             else:
-                continue  # Ignore background traffic not matching our server port
+                continue 
                 
-            # 2. Initialize the stream state if we haven't seen it yet
             if s_id not in streams:
                 streams[s_id] = {'last_dir': None, 'last_client_time': None, 'last_req_frame': None}
                 
             flow = streams[s_id]
             
-            # 3. The Strict State Machine Logic
             if direction == 'C->S':
-                # Client is sending data. 
-                # Record the timestamp and frame, and set the state to 'C->S'
                 flow['last_client_time'] = f_time
                 flow['last_req_frame'] = f_num
                 flow['last_dir'] = 'C->S'
                 
             elif direction == 'S->C':
-                # Server is sending data.
-                # ONLY calculate latency if the server is actively replying to a client request.
                 if flow['last_dir'] == 'C->S' and flow['last_client_time'] is not None:
                     delay = f_time - flow['last_client_time']
-                    
-                    # Filter out microsecond noise (like immediate TCP window updates/ACKs)
-                    if delay > 0.001: 
+                    if 0.0005 < delay < 5.0: 
                         results.append(f"{f_num},{flow['last_req_frame']},{delay:.6f}")
-                        
-                # Update the state to 'S->C'. 
-                # This prevents subsequent server packets from generating false delay calculations.
                 flow['last_dir'] = 'S->C'
         
         with open(csv_out, 'w') as f:
@@ -122,9 +128,18 @@ def extract_metadata(pcap_path, csv_out, mode):
 
 def run_gmm_analysis(csv_path):
     print("[*] Loading metadata...")
-    df = pd.read_csv(csv_path, names=['res_frame', 'req_frame', 'delay'])
-    df = df[(df['delay'] > 0.001) & (df['delay'] < 5.0)].dropna() # Filter noise/timeouts
+    try:
+        df = pd.read_csv(csv_path, names=['res_frame', 'req_frame', 'delay'])
+    except Exception:
+        print(f"[!] Could not read {csv_path}. File may be empty.")
+        return None, None
+
+    df = df[(df['delay'] > 0.001) & (df['delay'] < 5.0)].dropna() 
     
+    if len(df) < 2:
+        print(f"[!] Insufficient data in {csv_path} (minimum 2 samples required).")
+        return None, None 
+
     data_fit = df['delay'].values.reshape(-1, 1)
     
     bic_scores = []
@@ -140,115 +155,63 @@ def run_gmm_analysis(csv_path):
     df['component'] = best_gmm.predict(data_fit)
     return best_gmm, df
 
-def plot_separated_models(gmm, df_sample, output_dir, pcap_basename):
+def plot_separated_models(gmm, df_sample, output_dir, pcap_basename, mode):
     print("\n[*] Generating Validation Plots (Scaled to Milliseconds)...")
-    
-    # Prepare Data
-    data_seconds = df_sample['delay'].values
-    data_ms = data_seconds * 1000.0  # Convert to ms
-    
+    data_ms = df_sample['delay'].values * 1000.0
     max_plot_ms = PLOT_CUTOFF_SECONDS * 1000.0
-    n_comp = gmm.n_components
     
-    # Generate X-axis values (seconds)
     x_seconds = np.linspace(0, PLOT_CUTOFF_SECONDS, 2000).reshape(-1, 1)
     x_ms = x_seconds * 1000.0
     
-    # Calculate Probabilities
-    log_prob = gmm.score_samples(x_seconds)
-    pdf_total_seconds = np.exp(log_prob)
-    pdf_total_ms = pdf_total_seconds / 1000.0
+    pdf_total_ms = np.exp(gmm.score_samples(x_seconds)) / 1000.0
     
-    # ==========================================================
-    # PLOT 1: PCAP Probability Distribution vs Total GMM
-    # ==========================================================
+    # Plot 1: Total Distribution
     plt.figure(figsize=(12, 6))
-    plt.hist(data_ms, bins=1000, density=True, alpha=0.5, color='gray', 
-             label='Raw PCAP Distribution', range=(0, max_plot_ms))
+    plt.hist(data_ms, bins=1000, density=True, alpha=0.5, color='gray', label='Raw PCAP Distribution', range=(0, max_plot_ms))
     plt.plot(x_ms, pdf_total_ms, color='red', lw=2.5, label='Total GMM Model')
-    
-    plt.title(f'{pcap_basename} - Normalized Reality vs. GMM (Cutoff: {PLOT_CUTOFF_SECONDS}s)', fontsize=14)
-    plt.xlabel('Latency (Milliseconds)', fontsize=12)
-    plt.ylabel('Probability Density', fontsize=12)
-    plt.xlim(0, max_plot_ms)
-    plt.grid(alpha=0.3)
-    plt.legend(fontsize=11)
-    plt.tight_layout()
-    
-    plot1_path = os.path.join(output_dir, f"{pcap_basename}_plot1_distribution.png")
-    plt.savefig(plot1_path)
-    print(f"  [+] Saved: {plot1_path}")
+    plt.title(f'{pcap_basename} (Mode {mode}) - Reality vs. GMM')
+    plt.xlabel('Latency (Milliseconds)')
+    plt.ylabel('Probability Density')
+    plt.legend()
+    plt.savefig(os.path.join(output_dir, f"{pcap_basename}_mode{mode}_distribution.png"))
     plt.close()
 
-    # ==========================================================
-    # PLOT 2: Separated Gaussian Components
-    # ==========================================================
+    # Plot 2: Components
     plt.figure(figsize=(12, 6))
-    plt.plot(x_ms, pdf_total_ms, color='black', lw=1.5, linestyle=':', label='Total Model Outline')
-    
     responsibilities = gmm.predict_proba(x_seconds)
     individual_pdfs_ms = responsibilities * pdf_total_ms[:, np.newaxis]
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
     
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
-    
-    for i in range(n_comp):
-        color = colors[i % len(colors)]
-        mean_ms = gmm.means_[i][0] * 1000.0
-        plt.fill_between(x_ms.flatten(), 0, individual_pdfs_ms[:, i], alpha=0.5, color=color,
-                         label=f'Comp {i+1} (Mean: {mean_ms:.1f}ms | Wgt: {gmm.weights_[i]:.1%})')
-
-    plt.title(f'{pcap_basename} - Isolated Component Pathways', fontsize=14)
-    plt.xlabel('Latency (Milliseconds)', fontsize=12)
-    plt.ylabel('Probability Density', fontsize=12)
-    plt.xlim(0, max_plot_ms)
-    plt.grid(alpha=0.3)
-    plt.legend(fontsize=10, loc='upper right')
-    plt.tight_layout()
-    
-    plot2_path = os.path.join(output_dir, f"{pcap_basename}_plot2_components.png")
-    plt.savefig(plot2_path)
-    print(f"  [+] Saved: {plot2_path}")
+    for i in range(gmm.n_components):
+        plt.fill_between(x_ms.flatten(), 0, individual_pdfs_ms[:, i], alpha=0.5, color=colors[i % len(colors)],
+                         label=f'Comp {i+1} (Mean: {gmm.means_[i][0]*1000:.1f}ms)')
+    plt.title(f'{pcap_basename} (Mode {mode}) - Component Pathways')
+    plt.legend(loc='upper right')
+    plt.savefig(os.path.join(output_dir, f"{pcap_basename}_mode{mode}_components.png"))
     plt.close()
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python irctc_analyzer.py <pcap_file> <mode>")
-        print("Modes: 1 = TLS (Encrypted), 2 = HTTP (Plain)")
+        print("Usage: python full_gmm.py <pcap_file> <mode>")
         sys.exit(1)
 
     INPUT_PCAP = sys.argv[1]
     MODE = int(sys.argv[2])
     
-    # Extract basename (e.g., "10" from "./../10.pcap")
     pcap_basename = Path(INPUT_PCAP).name.split('.')[0]
-    
-    # Create the output directory based on the pcap basename
     output_dir = Path(pcap_basename)
     output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"\n[*] All outputs will be saved to directory: {output_dir}/")
 
-    # Define paths inside the new directory
-    LEAN_PCAP = str(output_dir / f"{pcap_basename}_filtered_traffic.pcap")
-    METADATA_CSV = str(output_dir / f"{pcap_basename}_latency_metadata.csv")
+    LEAN_PCAP = str(output_dir / f"{pcap_basename}_mode{MODE}_filtered.pcap")
+    METADATA_CSV = str(output_dir / f"{pcap_basename}_mode{MODE}_latency.csv")
     model_filename = str(output_dir / f"{pcap_basename}_model_mode{MODE}.pkl")
 
-    # 1. Pre-process
     pre_process_pcap(INPUT_PCAP, LEAN_PCAP, MODE)
-    
-    # 2. Extract Data
     extract_metadata(LEAN_PCAP, METADATA_CSV, MODE)
     
-    # 3. Fit Model
     best_model, results_df = run_gmm_analysis(METADATA_CSV)
     
-    # 4. Summary & Output
-    print(f"\n[+] Digital Twin Created with {best_model.n_components} pathways.")
-    for i in range(best_model.n_components):
-        print(f"Path {i+1}: {best_model.means_[i][0]*1000:.2f}ms (Weight: {best_model.weights_[i]:.1%})")
-
-    # 5. Save the Model
-    joblib.dump(best_model, model_filename)
-    print(f"\n[+] Model successfully saved to: {model_filename}")
-    
-    # 6. Generate and save the plots
-    plot_separated_models(best_model, results_df, str(output_dir), pcap_basename)
+    if best_model:
+        joblib.dump(best_model, model_filename)
+        print(f"\n[+] Model saved to: {model_filename}")
+        plot_separated_models(best_model, results_df, str(output_dir), pcap_basename, MODE)
