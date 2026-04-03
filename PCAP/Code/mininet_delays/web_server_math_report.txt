@@ -1,0 +1,19 @@
+=======================================================
+ ANALYTICAL NODE REPORT: INTERMEDIATE (T - R)
+=======================================================
+Source Total: 10_model_mode2.pkl
+Source Rest:  11_model_mode2.pkl
+-------------------------------------------------------
+[1] TOTAL OBSERVED (T)
+    Mean:       100.79 ms
+    Std Dev:    302.71 ms
+
+[2] REST OF NETWORK (R)
+    Mean:        80.54 ms
+    Std Dev:    208.60 ms
+
+-------------------------------------------------------
+[3] ISOLATED NODE RESULT (N)
+    Mean:        20.25 ms
+    Std Dev:    219.37 ms
+=======================================================

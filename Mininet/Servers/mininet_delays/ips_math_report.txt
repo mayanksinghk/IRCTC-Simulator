@@ -1,0 +1,19 @@
+=======================================================
+ ANALYTICAL NODE REPORT: INTERMEDIATE (T - R)
+=======================================================
+Source Total: 3_model_mode1.pkl
+Source Rest:  5_model_mode1.pkl
+-------------------------------------------------------
+[1] TOTAL OBSERVED (T)
+    Mean:       143.56 ms
+    Std Dev:    373.93 ms
+
+[2] REST OF NETWORK (R)
+    Mean:       139.93 ms
+    Std Dev:    394.82 ms
+
+-------------------------------------------------------
+[3] ISOLATED NODE RESULT (N)
+    Mean:         3.63 ms
+    [!] WARNING: Negative Variance. Models incompatible.
+=======================================================

@@ -6,7 +6,6 @@ from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.cli import CLI
 from mininet.node import Node, OVSSwitch
-from mininet.term import makeTerm
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +22,7 @@ class LinuxRouter(Node):
 
 class CRISDCNetwork(Topo):
     def build(self):
-        # 1. External Access (Fixed Switch Name)
+        # 1. External Access
         user = self.addHost("user1", ip="10.0.0.1/24")
         s1 = self.addSwitch('s1', cls=OVSSwitch, failMode='standalone')
         
@@ -32,14 +31,14 @@ class CRISDCNetwork(Topo):
         ips = self.addNode('ips', cls=LinuxRouter, ip="10.0.1.253/24")
         fw1 = self.addHost('fw1', ip="10.0.2.253/24")
         
-        # 3. DMZ Layer (Fixed Switch Name)
+        # 3. DMZ Layer
         s2 = self.addSwitch('s2', cls=OVSSwitch, failMode='standalone')
         adc = self.addHost("adc1", ip="10.0.3.1/24")
         waf = self.addHost("waf1", ip="10.0.3.2/24")
         web = self.addHost("web", ip="10.0.3.3/24")
         fw2 = self.addHost('fw2', ip="10.0.3.253/24")
         
-        # 4. Management Zone (Fixed Switch Name)
+        # 4. Management Zone
         s3 = self.addSwitch('s3', cls=OVSSwitch, failMode='standalone')
         slb = self.addHost("slb1", ip="10.0.4.1/24")
         app = self.addHost("app", ip="10.0.4.2/24")
@@ -59,150 +58,128 @@ class CRISDCNetwork(Topo):
         self.addLink(app, s3)
 
 def run():
+    logger.info("Preparing environment...")
+    
+    # Ensure directories exist on the host machine
+    directories = ['Logs', 'PCAP', 'mininet_delays']
+    for d in directories:
+        if not os.path.exists(d):
+            os.makedirs(d)
+            logger.info(f"Created directory: {d}")
+
     logger.info("Starting CRIS DC Network Emulation")
     topo = CRISDCNetwork()
     net = Mininet(topo=topo, controller=None)
     net.start()
 
     # ==========================
-    # 1. Interface & IP Forwarding Configuration
+    # 1. System & Interface Tuning
     # ==========================
-    logger.info("Configuring interfaces and routing...")
+    logger.info("Tuning Kernel and Limits for high concurrency...")
+    for node in net.values():
+        node.cmd("ulimit -n 8192") # Boost file descriptors
+        node.cmd("sysctl -w net.core.somaxconn=2048") # Increase listen backlog
+        node.cmd("sysctl -w net.ipv4.tcp_max_syn_backlog=2048")
+        node.cmd("sysctl -w net.ipv4.ip_local_port_range='1024 65535'")
+
+    # Configuration of IP Addresses across hops
     net.get('r1').setIP("10.0.1.254/24", intf='r1-eth1')
     net.get('ips').setIP("10.0.2.254/24", intf='ips-eth1')
     net.get('fw1').setIP("10.0.3.254/24", intf='fw1-eth1')
     net.get('fw2').setIP("10.0.4.254/24", intf='fw2-eth1')
 
-    # Enable Forwarding on hosts acting as firewalls
+    # Enable Forwarding
     for n in ['fw1', 'fw2']:
         net.get(n).cmd("sysctl -w net.ipv4.ip_forward=1")
 
     # ==========================
-    # 2. Explicit Routing Matrix
+    # 2. Routing Matrix
     # ==========================
-    # --- R1 Routes ---
     r1 = net.get('r1')
     r1.cmd("ip route add 10.0.2.0/24 via 10.0.1.253")
     r1.cmd("ip route add 10.0.3.0/24 via 10.0.1.253")
     r1.cmd("ip route add 10.0.4.0/24 via 10.0.1.253")
 
-    # --- IPS Routes ---
     ips = net.get('ips')
     ips.cmd("ip route add 10.0.0.0/24 via 10.0.1.254") 
     ips.cmd("ip route add 10.0.3.0/24 via 10.0.2.253") 
     ips.cmd("ip route add 10.0.4.0/24 via 10.0.2.253") 
 
-    # --- FW1 Routes ---
     fw1 = net.get('fw1')
     fw1.cmd("ip route add 10.0.0.0/24 via 10.0.2.254") 
     fw1.cmd("ip route add 10.0.1.0/24 via 10.0.2.254") 
     fw1.cmd("ip route add 10.0.4.0/24 via 10.0.3.253") 
 
-    # --- FW2 Routes ---
     fw2 = net.get('fw2')
     fw2.cmd("ip route add 10.0.0.0/24 via 10.0.3.254") 
     fw2.cmd("ip route add 10.0.1.0/24 via 10.0.3.254") 
     fw2.cmd("ip route add 10.0.2.0/24 via 10.0.3.254") 
 
-    # --- Endpoint Gateways ---
     for host in net.hosts:
         host.cmd("sysctl -w net.ipv6.conf.all.disable_ipv6=1")
-        host.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
         if host.name not in ['r1', 'ips', 'fw1', 'fw2']:
             subnet = host.IP().split('.')[2]
             gw = f"10.0.{subnet}.254"
-            # REMOVED the flush command here!
             host.cmd(f"ip route add default via {gw}")
-
-    # ==========================
-    # 3. Packet Captures (Checksums Disabled for Analysis)
-    # ==========================
-    logger.info("Starting background packet captures (AppArmor Bypass Mode)...")
-    nodes_to_capture = ['adc1', 'waf1', 'web', 'fw2', 'app', 'ips']
+    
+    # --- PCAP CAPTURE START ---
+    # We capture at IPS and ADC1 to verify the GMM delay injection
+    logger.info("Starting background packet captures...")
+    nodes_to_capture = ['user1', 'ips', 'adc1', 'app', 'waf1', 'web', 'fw2']
     
     for name in nodes_to_capture:
         node = net.get(name)
+        # Disable hardware offloading to ensure pcap captures actual packet sizes
         for intf in node.intfList():
             node.cmd(f'ethtool -K {intf.name} tx off rx off')
         
-        # -w - writes to standard output, > saves it to the file using bash
-        capture_cmd = f'tcpdump -i any "tcp port 80 or tcp port 443" -n -U -w - > PCAP/{name}_emulated.pcap 2> Logs/{name}_tcpdump.log &'
-        node.cmd(capture_cmd)
+        # Capture TCP traffic on ports 80 and 443
+        # -U ensures the buffer is flushed immediately so you don't lose data on crash
+        pcap_file = f"{os.getcwd()}/PCAP/{name}.pcap"
+        log_file = f"{os.getcwd()}/Logs/{name}_tcpdump.log"
+        node.cmd(f'tcpdump -i any "tcp port 80 or tcp port 443" -n -U -w {pcap_file} > {log_file} 2>&1 &')
+    # --- PCAP CAPTURE END ---
+
 
     # ==========================
-    # 4. Start Empirical Delay Proxies (The Chain)
+    # 3. Startup Specialized Scripts
     # ==========================
-    logger.info("Starting the Delay Proxy Chain...")
-    
-    def start_p(node, profile, b_ip, b_port=80, listen_port=80, cert=None, key=None):
-        # Use the absolute path to your specific virtual environment
-        venv_python = "/home/mayank/Desktop/IRCTC/venv/bin/python"
-        cmd = f"{venv_python} delay_proxy.py -b {b_ip} --bport {b_port} --port {listen_port}"
-        # Point to the Mininet_Profiles directory from your earlier steps
-        if profile and os.path.exists(f"./Mininet_Profiles/{profile}"): 
-            cmd += f" -c ./Mininet_Profiles/{profile}"
-        if cert and key and os.path.exists(cert): 
-            cmd += f" --cert {cert} --key {key}"
-        node.cmd(f"{cmd} > Logs/{node.name}_proxy.log 2>&1 &")
+    logger.info("Starting specialized node proxies...")
+    venv_python = "/home/mayank/Desktop/IRCTC/venv/bin/python3"
+    script_dir = "/home/mayank/Desktop/IRCTC/IRCTC-Simulator/docs/Mininet/Servers"
 
-    # 1. App Server (Local 8080 backend)
-    # net.get('app').cmd('/home/mayank/Desktop/IRCTC/venv/bin/python -m http.server 8080 &')
-    venv_python = "/home/mayank/Desktop/IRCTC/venv/bin/python"
-    net.get('app').cmd(f'{venv_python} fast_app.py > Logs/app_backend.log 2>&1 &')
-    start_p(net.get('app'), "app_isolated.csv", "127.0.0.1", 8080)
+    # Terminal Logic
+    net.get('app').cmd(f'{venv_python} {script_dir}/fast_app.py > Logs/app_backend.log 2>&1 &')
+    net.get('app').cmd(f'{venv_python} {script_dir}/app_server_node.py > Logs/app_proxy.log 2>&1 &')
     
-    # 2. SLB -> App
-    start_p(net.get('slb1'), None, "10.0.4.2")
+    # Management Zone
+    net.get('slb1').cmd(f'{venv_python} {script_dir}/slb_node.py > Logs/slb.log 2>&1 &')
+    net.get('fw2').cmd(f'{venv_python} {script_dir}/fw2_node.py > Logs/fw2.log 2>&1 &')
     
-    # 3. FW2 -> SLB
-    start_p(net.get('fw2'), "fw_isolated.csv", "10.0.4.1")
-    
-    # 4. Web Server -> FW2
-    start_p(net.get('web'), "web_isolated.csv", "10.0.3.253")
-    
-    # 5. WAF -> Web Server
-    start_p(net.get('waf1'), "waf_isolated.csv", "10.0.3.3")
-    
-    # 6. ADC (TLS Edge) -> WAF. Listens on 443, decrypts, and forwards to 80.
-    start_p(net.get('adc1'), "adc_isolated.csv", "10.0.3.2", b_port=80, listen_port=443, cert="adc_cert.pem", key="adc_key.pem")
+    # DMZ Zone
+    net.get('web').cmd(f'{venv_python} {script_dir}/web_node.py > Logs/web.log 2>&1 &')
+    net.get('waf1').cmd(f'{venv_python} {script_dir}/waf_node.py > Logs/waf.log 2>&1 &')
+    net.get('adc1').cmd(f'{venv_python} {script_dir}/adc_node.py > Logs/adc.log 2>&1 &')
 
-    # 7. IPS -> ADC
-    start_p(net.get('ips'), "ips_Firewall_isolated.csv", "10.0.2.1")
+    # IPS Transparent Interception
+    ips_n = net.get('ips')
+    ips_n.cmd('iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-ports 443')
+    ips_n.cmd(f'{venv_python} {script_dir}/ips_node.py > Logs/ips.log 2>&1 &')
 
-    time.sleep(5) # Wait for proxies to bind
+    time.sleep(5) # Allow bindings
 
     # ==========================
-    # 5. Launch Traffic
+    # 4. Traffic & Cleanup
     # ==========================
-    print("\n" + "="*60)
-    print("EMULATION READY: Automatically starting 1000 concurrent TLS requests.")
-    print("Monitor progress with: tail -f user1_load_results.txt")
-    print("="*60 + "\n")
-    
-    # Run 1000 requests, 50 at a time, using parallel curl processes
-    # load_cmd = "bash -c 'seq 1 1000 | xargs -P 50 -I {} curl -s -k -o /dev/null -w \"%{http_code}\\n\" https://10.0.3.1/' > user1_load_results.txt &"
-    # Path to your virtual environment Python
-    venv_python = "/home/mayank/Desktop/IRCTC/venv/bin/python"
-    
-    # Run the load tester in the background and save the summary to a text file
-    load_cmd = f"bash -c '{venv_python} traffic_gen.py > user1_load_results.txt 2>&1' &"
-    
-    net.get('user1').cmd(load_cmd)
+    logger.info("Launching Traffic Generator...")
+    net.get('user1').cmd(f'bash -c "{venv_python} traffic_gen.py > user1_load_results.txt 2>&1" &')
 
     CLI(net)
 
-    # ==========================
-    # 6. Cleanup Loop
-    # ==========================
-    logger.info("Cleaning up background processes...")
-    for name in nodes_to_capture:
-        net.get(name).cmd('pkill tcpdump')
-        
-    for name in ['adc1', 'waf1', 'web', 'fw2', 'slb1', 'app']:
-        net.get(name).cmd('pkill -f delay_proxy.py')
-        net.get(name).cmd('pkill -f http.server') 
-        
-    logger.info("Cleanup complete. PCAPs are ready for analysis.")
+    logger.info("Cleaning up...")
+    for node in net.hosts:
+        node.cmd('pkill -f "_node.py"')
+        node.cmd('pkill -f "fast_app.py"')
     net.stop()
 
 if __name__ == "__main__":

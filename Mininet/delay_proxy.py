@@ -15,64 +15,43 @@ logger = logging.getLogger("Proxy")
 
 def load_empirical_distribution(file_path):
     """
-    Loads raw data from EITHER an isolated CSV or a raw PCAP file, 
-    converts it into a 1ms bucket probability curve, and returns the weights.
+    MODIFIED: Loads precomputed delays from JSON (GMM Monte Carlo output),
+    converts it into a 1ms bucket probability curve.
     """
     if not file_path:
         logger.info("[!] No delay profile provided. Proxy will pass-through with 0ms delay.")
         return [0.0], [1.0]
 
-    logger.info(f"[*] Calculating Probability Curve from {file_path}...")
+    logger.info(f"[*] Loading Precomputed JSON Profile from {file_path}...")
     try:
-        if file_path.endswith('.pcap'):
-            # Extract HTTP response times directly from the captured packets
-            logger.info("[*] Detected PCAP. Extracting 'http.time' via tshark...")
-            cmd = ["tshark", "-r", file_path, "-Y", "http.response", "-T", "fields", "-e", "http.time"]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            
-            raw_delays = []
-            for line in result.stdout.split('\n'):
-                if line.strip():
-                    try:
-                        # Sometimes tshark outputs multiple comma-separated values; grab the first
-                        val = line.split(',')[0].strip()
-                        raw_delays.append(float(val))
-                    except ValueError:
-                        pass
-            raw_delays = np.array(raw_delays)
-            logger.info(f"[+] Extracted {len(raw_delays)} HTTP response packets directly from PCAP.")
-            
-        else:
-            # Assume standard isolated CSV from previous steps
-            df = pd.read_csv(file_path)
-            col_name = 'latency_seconds' if 'latency_seconds' in df.columns else 'HTTP_Response_Time_Seconds'
-            raw_delays = df[col_name].values
+        import json
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            # Access the key created by generate_mininet_delays.py
+            raw_delays = np.array(data['delays_seconds'])
 
         # Create the 1ms buckets (0.0 to 2.0 seconds)
         MAX_TIME = 2.0
         bins_1ms = np.arange(0, MAX_TIME + 0.001, 0.001)
         
-        # Calculate the Frequencies
+        # Calculate Frequencies
         counts, _ = np.histogram(raw_delays, bins=bins_1ms)
         
-        # Calculate the Empirical Probabilities (Weights)
+        # Calculate Empirical Probabilities (Weights)
         total_samples = len(raw_delays)
         if total_samples == 0:
-            logger.warning("[!] Data source is empty. Defaulting to 0ms delay.")
+            logger.warning("[!] JSON pool is empty. Defaulting to 0ms delay.")
             return [0.0], [1.0]
             
         probabilities = counts / total_samples
         probabilities = probabilities / np.sum(probabilities)
         bucket_times = (bins_1ms[:-1] + bins_1ms[1:]) / 2
         
-        logger.info(f"[+] Successfully built Probability Distribution (Loaded {total_samples} samples).")
+        logger.info(f"[+] Successfully loaded {total_samples} Monte Carlo samples into Proxy.")
         return bucket_times, probabilities
         
-    except FileNotFoundError:
-        logger.error(f"[X] File not found: {file_path}")
-        exit(1)
     except Exception as e:
-        logger.error(f"[X] Error processing file: {e}")
+        logger.error(f"[X] Error processing JSON file: {e}")
         exit(1)
 
 async def proxy_handler(request):

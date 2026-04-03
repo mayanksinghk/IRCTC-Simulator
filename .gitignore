@@ -1,9 +1,18 @@
 Containers/
 Data/
 PCAP/Unique_IP_all
+Mininet/Logs
+Mininet/PCAP
 
 # Ignore all CSV files in all subdirectories
-**/*.csv
+*.csv
 
-# Ignore all PCAP files in all subdirectories
-**/*.pcap
+# Packet captures
+*.pcap
+
+# Log files
+*.log
+
+# JSON data files
+*.json
+
