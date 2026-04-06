@@ -1,67 +1,140 @@
 # Execution and Analysis Workflows
 
-## 1) End-to-End Emulation Workflow
+This document is the practical “what to run, in what order, and why.”
+
+---
+
+## 1) End-to-end emulation workflow
 
 ```mermaid
 flowchart TD
-  A[Run Mininet/emulation.py] --> B[Topology + addressing + routes]
-  B --> C[Enable forwarding and baseline sysctl]
-  C --> D[Start tcpdump captures]
-  D --> E[Start app backend]
-  E --> F[Start delay proxies in chain order]
-  F --> G[Run user load generator]
-  G --> H[Inspect from Mininet CLI]
-  H --> I[Stop and cleanup]
-  I --> J[Use generated PCAP files for offline analysis]
+  A[Run Mininet/emulation.py] --> B[Build topology and links]
+  B --> C[Apply kernel tuning and static routes]
+  C --> D[Disable IPv6 and set default routes]
+  D --> E[Start tcpdump captures]
+  E --> F[Launch backend and node services]
+  F --> G[Apply IPS PREROUTING redirect for 443]
+  G --> H[Launch traffic generator from user1]
+  H --> I[Inspect/validate in Mininet CLI]
+  I --> J[Exit CLI and cleanup]
 ```
 
-### Practical behavior
+### What you need before running
 
-- `emulation.py` hard-codes a startup order because each hop depends on next-hop availability.
-- Delay profile files under `Mininet_Profiles/` are consumed by `delay_proxy.py`.
-- TLS is terminated at ADC edge (configured with cert/key), then forwarded internally.
+- Mininet + OVS + Linux networking tools (`tcpdump`, `iptables`, `ethtool`)
+- Python environment with runtime packages used by node services
+- ADC TLS cert/key in `Mininet/Servers/SSL_Keys/`
+- Delay pool JSON files under `Mininet/Servers/mininet_delays/`
 
-## 2) HTTP Analysis Workflow
+### Run
+
+```bash
+cd Mininet
+sudo python3 emulation.py
+```
+
+Generated captures are written to `Mininet/PCAP/`.
+
+---
+
+## 2) Delay model generation workflow (for Mininet delay pools)
 
 ```mermaid
 flowchart LR
-  P[Input pcap] --> E1[http_extract.py]
-  E1 --> E2[get.py / post.py]
-  E1 --> E3[RTT/http_rtt.py]
-  E3 --> E4[RTT/rtt.py or graph.py]
-  E2 --> O1[URI frequency CSV]
-  E4 --> O2[RTT distributions + summary plots]
+  P[Input PCAP] --> F[PCAP/Code/full_gmm.py]
+  F --> M[Per-scenario model .pkl]
+  M --> G[generate_mininet_delays.py]
+  G --> D[mininet_delays/*.json]
+  D --> R[Consumed by Mininet/Servers/*_node.py]
 ```
 
-## 3) TLS Analysis Workflow
+Batch helper for standard scenarios:
+
+```bash
+cd PCAP/Code
+bash run_analysis.sh
+```
+
+---
+
+## 3) HTTP analysis workflow
 
 ```mermaid
 flowchart LR
-  P[Input pcap] --> T1[tls_rtt.py]
+  P[Input pcap] --> H1[http_extract.py]
+  P --> H2[get.py / post.py]
+  P --> H3[RTT/http_rtt.py]
+  H3 --> H4[RTT/rtt.py]
+  H2 --> O1[Normalized API frequency CSV]
+  H4 --> O2[RTT plots by method]
+```
+
+Batch RTT path used in repo:
+
+```bash
+cd PCAP/http/RTT
+bash run.sh
+```
+
+Default script assumes `Data/Input_PCAP/{8-9,10,11,12}.pcap`.
+
+---
+
+## 4) TLS analysis workflow
+
+```mermaid
+flowchart LR
+  P[Input pcap] --> T0[tshark filter in run.sh]
+  T0 --> T1[tls_rtt.py]
   T1 --> T2[rtt.py]
-  T2 --> O[TLS RTT graphs + distributions]
+  T2 --> O[TLS RTT CSV + distribution/counter plots]
 ```
 
-## 4) Socket + ASN Workflow
+Batch run:
+
+```bash
+cd PCAP/tls
+bash run.sh
+```
+
+Notes:
+
+- `run.sh` filters traffic with a subnet-specific TLS filter expression.
+- Scenario defaults are `3`, `5`, and `6-7`.
+
+---
+
+## 5) Sockets + ASN workflow
 
 ```mermaid
 flowchart LR
   P[Input pcap] --> S1[sockets.py]
-  S1 --> S2[subnet.py / port.py]
+  S1 --> S2[port.py]
   S1 --> A1[ASN.py]
-  S2 --> O1[IP/socket/biflow markdown + txt]
-  A1 --> O2[ASN excel/csv mappings]
+  A1 --> S2
+  S2 --> O1[Protocol markdown summaries]
+  A1 --> O2[IP-to-ASN CSV + Excel]
 ```
 
-## 5) File/Folder Intent at a Glance
+Typical sequence:
 
-- **Runtime code**: `Mininet/`
-- **Runtime services**: `Mininet/Servers/`
-- **Captured artifacts**: `PCAP/...` scenario folders
-- **Offline analyzers**: `PCAP/*/*.py`
+1. Generate unique IP/socket/biflow lists with `sockets.py`
+2. Build ASN map with `ASN.py`
+3. Generate per-protocol markdown summaries with `port.py` (or `Port/run.sh`)
 
-## 6) Why these workflows are separated
+---
 
-- Emulation and analysis have different compute/runtime dependencies.
-- Analysts can rerun parsing scripts on existing PCAPs without rerunning Mininet.
-- Per-protocol scripts keep outputs modular and easier to validate.
+## 6) Operational caveats to know
+
+- `Mininet/emulation.py` contains absolute machine-specific paths for Python/script dir; update these on new setups.
+- Batch scripts rely on scenario-named inputs in `Data/Input_PCAP/`.
+- Some analysis choices are intentionally environment-specific (for example TLS subnet filter in `PCAP/tls/run.sh`).
+- Runtime captures only include TCP 80/443 by default.
+
+---
+
+## 7) Why workflows are split
+
+- Emulation requires privileged networking/runtime dependencies.
+- Analysis can run independently on existing PCAP archives.
+- Protocol-specific scripts keep outputs small, targeted, and easier to validate.
