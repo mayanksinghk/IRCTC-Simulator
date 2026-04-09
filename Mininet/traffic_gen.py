@@ -31,7 +31,7 @@ async def worker(session, url, queue, pbar, results):
 async def main():
     # Target the ADC/IPS entry point
     url = "https://10.0.3.1/"
-    total_requests = 100000  # Change to 100,000 for final stress test
+    total_requests = 10000  # Change to 100,000 for final stress test
     concurrency = 50       # Matches your standard IRCTC burst profile
 
     print(f"[*] Starting Load Test: {total_requests} packets at {concurrency} concurrency...")

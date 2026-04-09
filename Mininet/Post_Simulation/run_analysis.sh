@@ -10,8 +10,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Define paths relative to the script's location
-# full_gmm.py is in the same folder as this script
-# PYTHON_SCRIPT="$SCRIPT_DIR/full_gmm.py"
+# full_gmm.py is in the PCAP/Code folder
 PYTHON_SCRIPT="./../../PCAP/Code/full_gmm.py"
 
 # PCAP directory is a sibling to 'Post_Simulation' inside the 'Mininet' folder

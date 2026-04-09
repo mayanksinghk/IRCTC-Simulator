@@ -37,7 +37,7 @@ def generate_isolated_delays(total_path, rest_path, num_samples, output_file):
         print("[*] No Rest Model provided. Assuming terminal node (Node = Target).")
         isolated_delays = total_samples
     
-    # 3. Filter impossible physics
+    # 3. Filter impossible physics(all delays must be > 0.001s) and limit to requested sample size
     valid_delays = isolated_delays[isolated_delays > 0.001]
     
     if len(valid_delays) >= num_samples:
@@ -58,10 +58,7 @@ def generate_isolated_delays(total_path, rest_path, num_samples, output_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate isolated node delays for Mininet emulators.")
     parser.add_argument("--total", required=True, help="Path to Total Network GMM (.pkl)")
-    
-    # Changed to required=False so it can be omitted for the App Server
     parser.add_argument("--rest", required=False, default=None, help="Path to Rest of Network GMM (.pkl) or 'NONE'")
-    
     parser.add_argument("--output", default="delays.json", help="Output file name (e.g., delays.json)")
     parser.add_argument("--samples", type=int, default=100000, help="Number of delay samples to generate")
     

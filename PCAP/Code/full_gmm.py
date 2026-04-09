@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 from pathlib import Path
 import joblib 
+from scipy.stats import norm
 
 # ================= CONFIGURATION =================
 SAMPLE_SIZE = 1000000              
 COMP_RANGE = range(2, 30)          
 SAMPLES_PER_COMP = 10              
-PLOT_CUTOFF_SECONDS = 2.0          
+PLOT_CUTOFF_SECONDS = 1          
 # =================================================
 
 def pre_process_pcap(infile, outfile, mode):
@@ -134,7 +135,7 @@ def run_gmm_analysis(csv_path):
         print(f"[!] Could not read {csv_path}. File may be empty.")
         return None, None
 
-    df = df[(df['delay'] > 0.001) & (df['delay'] < 5.0)].dropna() 
+    df = df[(df['delay'] > 0.0) & (df['delay'] < 5.0)].dropna() 
     
     if len(df) < 2:
         print(f"[!] Insufficient data in {csv_path} (minimum 2 samples required).")
@@ -160,23 +161,39 @@ def plot_separated_models(gmm, df_sample, output_dir, pcap_basename, mode):
     data_ms = df_sample['delay'].values * 1000.0
     max_plot_ms = PLOT_CUTOFF_SECONDS * 1000.0
     
+    # X-axis generation for continuous lines
     x_seconds = np.linspace(0, PLOT_CUTOFF_SECONDS, 2000).reshape(-1, 1)
     x_ms = x_seconds * 1000.0
     
+    # GMM PDF Calculation
     pdf_total_ms = np.exp(gmm.score_samples(x_seconds)) / 1000.0
     
-    # Plot 1: Total Distribution
+    # ==========================================
+    # Plot 1: Total Distribution (PDF Comparison)
+    # ==========================================
     plt.figure(figsize=(12, 6))
-    plt.hist(data_ms, bins=1000, density=True, alpha=0.5, color='gray', label='Raw PCAP Distribution', range=(0, max_plot_ms))
-    plt.plot(x_ms, pdf_total_ms, color='red', lw=2.5, label='Total GMM Model')
-    plt.title(f'{pcap_basename} (Mode {mode}) - Reality vs. GMM')
+    
+    # Calculate empirical PDF from raw data to plot as a solid line (instead of bars)
+    counts, bin_edges = np.histogram(data_ms, bins='auto', density=True, range=(0, max_plot_ms))
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    
+    # Plot Raw PCAP as Solid Line
+    plt.plot(bin_centers, counts, color='gray', lw=2, label='Raw PCAP Distribution')
+    
+    # Plot GMM as Dashed Line
+    plt.plot(x_ms, pdf_total_ms, color='red', lw=2.5, linestyle='--', label='Total GMM Model')
+    
+    plt.title(f'{pcap_basename} (Mode {mode}) - PDF: Reality vs. GMM')
     plt.xlabel('Latency (Milliseconds)')
     plt.ylabel('Probability Density')
     plt.legend()
+    plt.grid(True, alpha=0.3)
     plt.savefig(os.path.join(output_dir, f"{pcap_basename}_mode{mode}_distribution.png"))
     plt.close()
 
+    # ==========================================
     # Plot 2: Components
+    # ==========================================
     plt.figure(figsize=(12, 6))
     responsibilities = gmm.predict_proba(x_seconds)
     individual_pdfs_ms = responsibilities * pdf_total_ms[:, np.newaxis]
@@ -187,7 +204,41 @@ def plot_separated_models(gmm, df_sample, output_dir, pcap_basename, mode):
                          label=f'Comp {i+1} (Mean: {gmm.means_[i][0]*1000:.1f}ms)')
     plt.title(f'{pcap_basename} (Mode {mode}) - Component Pathways')
     plt.legend(loc='upper right')
+    plt.grid(True, alpha=0.3)
     plt.savefig(os.path.join(output_dir, f"{pcap_basename}_mode{mode}_components.png"))
+    plt.close()
+
+    # ==========================================
+    # Plot 3: Cumulative Distribution (CDF Comparison)
+    # ==========================================
+    plt.figure(figsize=(12, 6))
+    
+    # 1. Raw PCAP CDF (Solid Line)
+    # Filter sorted data to match our plot cutoff window
+    sorted_data = np.sort(data_ms)
+    sorted_data_filtered = sorted_data[sorted_data <= max_plot_ms]
+    y_ecdf = np.arange(1, len(sorted_data_filtered) + 1) / len(sorted_data_filtered)
+    
+    plt.plot(sorted_data_filtered, y_ecdf, color='blue', lw=2.5, label='Raw PCAP CDF')
+
+    # 2. GMM CDF (Dashed Line)
+    weights = gmm.weights_
+    means_ms = gmm.means_.flatten() * 1000.0
+    stds_ms = np.sqrt(gmm.covariances_).flatten() * 1000.0
+    
+    Y_total_cdf = np.zeros_like(x_ms).flatten()
+    for i in range(gmm.n_components):
+        comp_cdf = weights[i] * norm.cdf(x_ms.flatten(), loc=means_ms[i], scale=stds_ms[i])
+        Y_total_cdf += comp_cdf
+        
+    plt.plot(x_ms.flatten(), Y_total_cdf, color='red', lw=3, linestyle='--', label='Total GMM CDF')
+
+    plt.title(f'{pcap_basename} (Mode {mode}) - CDF: Reality vs. GMM')
+    plt.xlabel('Latency (Milliseconds)')
+    plt.ylabel('Cumulative Probability')
+    plt.legend(loc='lower right')
+    plt.grid(True, alpha=0.3)
+    plt.savefig(os.path.join(output_dir, f"{pcap_basename}_mode{mode}_cdf.png"))
     plt.close()
 
 if __name__ == "__main__":

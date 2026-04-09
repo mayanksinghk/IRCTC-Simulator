@@ -3,6 +3,7 @@ Data/
 PCAP/Unique_IP_all
 Mininet/Logs
 Mininet/PCAP
+output/
 
 # Ignore all CSV files in all subdirectories
 *.csv
