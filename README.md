@@ -12,14 +12,12 @@ Below are the visualization outputs from the Web Server (web) node comparing the
 - **Probability Distribution Function (PDF)**
 This shows the raw probability density of the delays. Notice how the multimodal nature of the network traffic is captured.
 ![This image shows the pdf calculated from raw PCAP vs Calculated using GMM](Mininet/Post_Simulation/web/web_mode2_distribution.png)
-This image shows the pdf calculated from raw PCAP vs Calculated using GMM
+
 - **Cumulative Distribution Function (CDF)**
 The CDF provides a clear view of the latency percentiles, proving that the long-tail latencies in our simulated environment align with the theoretical models.![This image shows the cdf calculated from raw PCAP vs Calculated using GMM](Mininet/Post_Simulation/web/web_mode2_cdf.png)
-This image shows the cdf calculated from raw PCAP vs Calculated using GMM
 
 - **GMM Components**
 Because network requests fall into different "buckets" of latency (cache hit, processing delay, deep inspection), the GMM is broken down into its underlying Gaussian components.![This image shows individual components of the GMM which together create the underlying model of the network component](Mininet/Post_Simulation/web/web_mode2_components.png)
-This image shows individual components of the GMM which together create the underlying model of the network component
   
 
 If you are new to the project, start here, then read:
